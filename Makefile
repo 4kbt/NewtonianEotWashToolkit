@@ -1,15 +1,10 @@
 OCT:= octave --no-init-file \
 	--eval 'graphics_toolkit("gnuplot");'\
 	--eval 'ignore_function_time_stamp("all");'\
+	-p shapes/ \
 	-q 
 
 GNU    := gnuplot -e 'set term dumb' -e 'HOMEDIR = "$(HOMEDIR)"' -d
-
-LYXINTERACT := lyx -userdir $(HOMEDIR)/.lyx
-.LYXINTERACT:
-	$(LYXINTERACT)
-
-LYX	:= $(LYXINTERACT) -batch --export "pdf2" -dbg info,latex
 
 .INTERACT: 
 	$(OCT) --persist --eval 'ignore_function_time_stamp("system");'
