@@ -1,0 +1,19 @@
+set term postscript enhanced solid color eps
+set output 'horizontalOffsetPlot.eps'
+
+fn = 'HorizontalOffsetFitOutput.dat'
+
+set logsc xy
+
+set xlabel 'Pendulum-attractor separation ({/Symbol m}m)'
+set ylabel '18-omega torque amplitude (aN-m)'
+set cblabel 'Horizontal offset (mm)'
+set title 'Short-range 18-omega with horizontal offsets'
+
+set key noauto
+
+set palette rgb 33,13,10
+
+
+pl [50:15000]\
+	fn u ($2*1e6):(sqrt($3**2 + $4**2)*1e18):(sqrt($6**2 + $7**2)*1e18):($1*1e3) w yerr palette

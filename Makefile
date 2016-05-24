@@ -6,6 +6,14 @@ OCT:= octave --no-init-file \
 
 GNU    := gnuplot -e 'set term dumb' -e 'HOMEDIR = "$(HOMEDIR)"' -d
 
+HorizontalOffsetFitOutput.dat: eighteenComputation.m
+	$(OCT) $<
+
+horizontalOffsetPlot.eps: horizontalOffsetPlot.gpl HorizontalOffsetFitOutput.dat
+	$(GNU) $<
+
+eighteen: horizontalOffsetPlot.eps
+
 .INTERACT: 
 	$(OCT) --persist --eval 'ignore_function_time_stamp("system");'
 
