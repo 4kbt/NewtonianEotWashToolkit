@@ -2,7 +2,7 @@ BootOut = [];
 
 for ctr = 1:nAngles:(rows(ResultsArray) )
 
-	RA = ResultsArray(ctr:(ctr+nPts - 1),:);
+	RA = ResultsArray(ctr:(ctr+nAngles - 1),:);
 
 	o = RA(1,1);
 	h = RA(1,2);
