@@ -44,8 +44,8 @@ Attractor = translatePMArray(Ring, [0 0 -wThick/2.0]);
 ResultsArray =[];
 fit = [];
 
-for HorizOffset = [0 1e-3 5e-3];
-for height = logspace(-4,-2,5)
+for HorizOffset = [0 1e-3 2e-3 3.5e-3 5e-3 10e-3];
+for height = logspace(-4,-2,20)
 
 	HorizOffset
 	height
@@ -70,6 +70,7 @@ for height = logspace(-4,-2,5)
 	%Save it all.
 	fit = [fit; HorizOffset height b' s' ];
 	ResultsArray = [ResultsArray; out];
+save 'HorizontalOffsetResultsArray.dat' ResultsArray
 
 end %height
 end %HorizOffset
