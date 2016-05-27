@@ -8,25 +8,26 @@ addpath('shapes/');
 %Set up parameters
 wInnerRadius = 23.5e-3; % ted's thesis
 wOuterRadius = 26e-3;   % ted's thesis
-
+wSubtendedAngle = 2*pi/36; %18-omega;
 wThick = 54e-6;	% ted's thesis
-wWidth = wInnerRadius * 2*pi/36;
-wLength = wOuterRadius-wInnerRadius;
 
-nPts = 16 %number of points passed to each axis of genPMRect.
+nPts = 8 %number of points across the wedge at its widest point
+nCirPoints = ceil(nPts/sin(wSubtendedAngle/2));  %this works up to angle of pi
 nzPts = 1;
 nAngles = 100; %number of angles to sample
 
 rho = 21000;
 
 %Construct a single wedge
-wedgeMass = rho * wThick * wWidth * wLength;
+wedgeMass = rho * pi *( wOuterRadius.^2 - wInnerRadius.^2) * ...
+		wSubtendedAngle/2/pi *wThick;
 
 wedgeMass * 18
 
-Wedge = genPointMassRect(wedgeMass,  wLength, wWidth, wThick, nPts, nPts, nzPts);
+Wedge = genPointMassWedge(wedgeMass,  wInnerRadius, wOuterRadius, wThick,
+			  wSubtendedAngle, nzPts, nCirPoints);
 
-Wedge = translatePMArray(Wedge, [wInnerRadius - wLength/2 0 0]);
+Wedge = rotatePMArray(Wedge, pi/2, [0 1 0]); 
 
 %Build up mass array
 Ring =[];
@@ -44,10 +45,12 @@ Attractor = translatePMArray(Ring, [0 0 -wThick/2.0]);
 ResultsArray =[];
 fit = [];
 
-for HorizOffset = [0 1e-3 2e-3 3.5e-3 5e-3 10e-3];
-for height = logspace(-4,-2,20)
+for XOffset = linspace(-5e-3 , 5e-3, 20);
+for YOffset = linspace(-5e-3 , 5e-3, 20);
+for height = 160e-6 %logspace(-4,-2,20)
 
-	HorizOffset
+	XOffset
+	YOffset
 	height
 
 	out = [];
@@ -56,11 +59,11 @@ for height = logspace(-4,-2,20)
 
 		A = translatePMArray(Attractor, [0 0 -height]);
 		A = rotatePMArray(A,angle,[0 0 1]);
-		A = translatePMArray(A,[HorizOffset 0 0]);
+		A = translatePMArray(A,[XOffset YOffset 0]);
 
 		[f t] = pointMatrixGravity(Pendulum,A);
 
-		out = [out; HorizOffset height angle f t];
+		out = [out; XOffset YOffset height angle f t];
 
 	end
 
@@ -68,18 +71,20 @@ for height = logspace(-4,-2,20)
 	[b s r] = sineFitter(out(:,3), out(:,9), 18/2/pi);
 
 	%Save it all.
-	fit = [fit; HorizOffset height b' s' ];
+	fit = [fit; XOffset YOffset height b' s' ];
 	ResultsArray = [ResultsArray; out];
-save 'HorizontalOffsetResultsArray.dat' ResultsArray
-
-end %height
-end %HorizOffset
+save 'HorizontalXYResultsArray160um8pts.dat' ResultsArray
 
 bsFitter
 
-save 'HorizontalOffsetFitOutput.dat' BootOut
+save 'HorizontalXYFitOutputHeight160um8pts.dat' BootOut
 
-save 'HorizontalOffsetResultsArray.dat' ResultsArray
+end %height
+end %YOffset
+end %XOffset
+
+
+save 'HorizontalXYResultsArray160um8pts.dat' ResultsArray
 
 loglogerr(BootOut(:,2), sqrt(BootOut(:,3).^2 + BootOut(:,4).^2), sqrt(BootOut(:,6).^2+BootOut(:,7).^2))
 
