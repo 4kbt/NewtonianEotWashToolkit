@@ -13,7 +13,8 @@ function array= genPointMassRect(mass, thickness, width, height, ...
 
 	pointMass = mass / npoints;
 
-	array = [];
+	array = zeros(npoints,4);
+	ctr = 1;
 
 	for i = 1:nxpoints
 		for j = 1:nypoints
@@ -23,7 +24,8 @@ function array= genPointMassRect(mass, thickness, width, height, ...
 					( j - (nypoints+1) / 2) * ygrid,...
 					( k - (nzpoints+1) / 2) * zgrid];
 
-					array = [ array ; newMass ];
+					array(ctr,:) =  newMass;
+					ctr++;
 			end
 		end
 	end
