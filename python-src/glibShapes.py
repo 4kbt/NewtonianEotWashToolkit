@@ -86,9 +86,9 @@ def rectangle(mass, x, y, z, nx, ny, nz):
     for k in range(nz):
         for l in range(ny):
             for m in range(nx):
-                pointArray[k*ny*nx+l*nx+m, 1] = m*x/float(nx)-x/2.
-                pointArray[k*ny*nx+l*nx+m, 2] = l*y/float(ny)-y/2.
-                pointArray[k*ny*nx+l*nx+m, 3] = k*z/float(nz)-z/2.
+                pointArray[k*ny*nx+l*nx+m, 1] = m*x/float(nx-1)-x/2.
+                pointArray[k*ny*nx+l*nx+m, 2] = l*y/float(ny-1)-y/2.
+                pointArray[k*ny*nx+l*nx+m, 3] = k*z/float(nz-1)-z/2.
 
     return pointArray
 
@@ -117,7 +117,7 @@ def annulus(mass, iR, oR, t, nx, nz):
     pointArray : ndarray
         point mass array of format [m, x, y, z]
     """
-    zgrid = t/float(nz)
+    zgrid = t/float(nz-1)
     xgrid = oR*2./float(nx)
     ygrid = xgrid
 
@@ -131,7 +131,7 @@ def annulus(mass, iR, oR, t, nx, nz):
             for m in range(nx):
                 pointArray[k*nx*nx+l*nx+m, 1] = m*2*oR/float(nx)-oR
                 pointArray[k*nx*nx+l*nx+m, 2] = l*2*oR/float(nx)-oR
-                pointArray[k*nx*nx+l*nx+m, 3] = k*t/float(nz)-t/2.
+                pointArray[k*nx*nx+l*nx+m, 3] = k*t/float(nz-1)-t/2.
 
     pointArray = np.array([pointArray[k] for k in range(nx*nx*nz) if
                            pointArray[k, 1]**2+pointArray[k, 2]**2 > iR**2 and
@@ -180,7 +180,7 @@ def cone(mass, R, H, nx, nz):
             for m in range(nx):
                 pointArray[k*nx*nx+l*nx+m, 1] = m*2*R/float(nx)-R
                 pointArray[k*nx*nx+l*nx+m, 2] = l*2*R/float(nx)-R
-                pointArray[k*nx*nx+l*nx+m, 3] = k*H/float(nz)
+                pointArray[k*nx*nx+l*nx+m, 3] = k*H/float(nz-1)
 
     pointArray = np.array([pointArray[k] for k in range(nx*nx*nz) if
                            pointArray[k, 1]**2+pointArray[k, 2]**2 <=
@@ -379,29 +379,3 @@ def wedge2(mass, iR, oR, t, theta, nr, nq, nz):
         pointArray[:, 1:] = cyl_2_cart(pointArray[:, 1:])
 
     return pointArray
-
-
-def test_shell():
-    """
-    Check that the radius and mass and quadrupole check out.
-
-    Tests
-    -----
-    spherical_random_shell : function
-    """
-    mass = 1.
-    r = 10
-    n = 100000
-    shell = spherical_random_shell(mass, r, n)
-    nNew = len(shell)
-    threshold = 100.*np.sqrt(nNew)*np.finfo(float).eps
-    # Check the radius
-    assert abs(np.sqrt(np.sum(shell[:, 1:]**2, 1))-r).all() < threshold
-    # Check the mass
-    assert abs(np.sum(shell[:, 0])-mass) < threshold
-    # Make sure each top quarter is roughly evenly distributed
-    zq = np.array([shell[k] for k in range(nNew) if shell[k, 3] > r/2.])
-    yq = np.array([shell[k] for k in range(nNew) if shell[k, 2] > r/2.])
-    xq = np.array([shell[k] for k in range(nNew) if shell[k, 1] > r/2.])
-    q = np.array([np.sum(xq[:, 0]), np.sum(yq[:, 0]), np.sum(zq[:, 0])])
-    assert (np.max(q)-np.min(q))/np.average(q) < 2.*np.sqrt(n)

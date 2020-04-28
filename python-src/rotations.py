@@ -176,12 +176,43 @@ def dlmn(LMax, beta):
     Compute all wigner small d matrices of angle beta for all orders up to
     LMax, using the recursive method.
     """
-    ds = rotate_H_recurs(LMax, beta)
+    beta = beta % (2*np.pi)
     ms = np.arange(-LMax, LMax+1)
+    # If beta is between (pi, 2pi] we need to use as H(-b) and symmetry
+    if beta > np.pi:
+        beta = 2*np.pi - beta
+        fac = np.outer((-1)**(np.abs(ms)), (-1)**(np.abs(ms)))
+    else:
+        fac = 1
+    ds = rotate_H_recurs(LMax, beta)
     epsmmp = epsm(-ms)
     epsmm = epsm(ms)
-    efac = np.outer(epsmm, epsmmp)
+    efac = np.outer(epsmm, epsmmp)*fac
     for l in range(LMax):
+        ds[l] *= efac[LMax-l:LMax+l+1, LMax-l:LMax+l+1]
+    return ds
+
+
+def wignerDl(LMax, alpha, beta, gamma):
+    """
+    """
+    beta = beta % (2*np.pi)
+    ms = np.arange(-LMax, LMax+1)
+    # If beta is between (pi, 2pi] we need to use as H(-b) and symmetry
+    if beta > np.pi:
+        beta = 2*np.pi - beta
+        fac = np.outer((-1)**(np.abs(ms)), (-1)**(np.abs(ms)))
+    else:
+        fac = 1
+    ds = rotate_H_recurs(LMax, beta)
+    expa = np.exp(-1j*ms*alpha)
+    expg = np.exp(-1j*ms*gamma)
+    epsmmp = epsm(-ms)
+    epsmm = epsm(ms)
+    expfac = np.outer(expa, expg)
+    efac = np.outer(epsmm, epsmmp)*expfac*fac
+    for l in range(LMax):
+        ds[l] = ds[l].astype('complex')
         ds[l] *= efac[LMax-l:LMax+l+1, LMax-l:LMax+l+1]
     return ds
 
@@ -190,7 +221,7 @@ def rotate_qlm(qlm, alpha, beta, gamma):
     LMax = np.shape(qlm)[0] - 1
     qNew = np.copy(qlm)
     # XXX Should test to make sure really need to go to LMax + 1
-    ds = dlmn(LMax+1, beta)
+    ds = wignerDl(LMax+1, alpha, beta, gamma)
     for k in range(1, LMax+1):
         qNew[k, LMax-k:LMax+k+1] = np.dot(ds[k], qlm[k, LMax-k:LMax+k+1])
     return qNew
@@ -224,11 +255,12 @@ def Dl(l, alpha, beta, gamma):
 
 # Example script
 # Recursive rotation matrix calculation
-Hs = rotate_H_recurs(100, np.pi/4)
+beta = np.pi/4
+Hs = rotate_H_recurs(100, beta)
 epsmmp = epsm(-np.arange(-40, 41))  # sign factor #1
 epsmm = epsm(np.arange(-40, 41))    # sign factor #2
 # Classic calcultion
-H40 = Dl(40, 0, np.pi/4, 0)  # transposed relative to Hs
+H40 = Dl(40, 0, beta, 0)  # transposed relative to Hs
 
 fig, ax = plt.subplots(1, 2, sharey=True)
 ax[0].imshow(np.outer(epsmm, epsmmp)*Hs[40])
