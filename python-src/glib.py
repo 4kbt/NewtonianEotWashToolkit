@@ -238,7 +238,7 @@ def display_points(pm1, pm2):
         Axes object
     """
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = Axes3D(fig)
     ax.scatter(pm1[:, 1], pm1[:, 2], pm1[:, 3], label='mass1', s=50, alpha=.5)
     ax.scatter(pm2[:, 1], pm2[:, 2], pm2[:, 3], label='mass2', s=50,
                marker='s', alpha=.5)

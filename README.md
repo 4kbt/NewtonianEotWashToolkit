@@ -1,6 +1,6 @@
-# Point Gravity (Python)
+# Point Gravity
 ### Author (Octave): Charlie Hagedorn
-### Python implementation: John G. Lee
+### Author (Python): John G. Lee
 
 ## Introduction
 
@@ -15,18 +15,22 @@ components.
 
 We can also simply visualize the point mass arrays using a 3-d plot.
 
+![Example: Three cylinders comprising object 1(blue), and object 2(orange)](/images/glibEx.png)
+
 ### Python implementation
 
-The python implementation of PointGravity is based on the work of Dr. Charlie 
-Hagedorn. The second portion of this package is the implementation of a
-multipole analysis for the same calculations. The gravitational potential can
-be decomposed into interactions of multipole moments allowing for accurate and 
-fast calculations from relatively few low order moments. We compute several 
-low order moments of basic shapes or estimate the moments from a point-mass 
-array. We can rotate these moments to large orders ([ref][4]) and 
-translations coming soon([ref][2], [ref][3]). This allows us to compute the
-interactions in an entirely different and often useful perspective. This
-portion is based largely on the private program, MULTIN, of Prof. Adelberger.
+The python implementation of PointGravity is a nearly identical framework of
+the work of Dr. Charlie Hagedorn. However, the second portion of this package
+includes the implementation of a multipole analysis for the same calculations.
+It is well known that the gravitational potential can be decomposed into
+interactions of multipole moments allowing for accurate and fast calculations
+from only a relatively small number of low order moments. We can compute
+several low order moments of basic shapes or estimate the moments from a
+point-mass array. We can rotate these moments to large orders ([ref][4]) and 
+translate moments in several ways ([ref][2], [ref][3]). This allows us to
+compute the interactions in an entirely different and often useful perspective.
+This portion is based largely on the private program, MULTIN, of Prof.
+Adelberger.
 
 ## References
 1. https://github.com/4kbt/PointGravity
@@ -48,12 +52,14 @@ portion is based largely on the private program, MULTIN, of Prof. Adelberger.
 - [X] Multipole rotations
 - [X] Multipole torques
 - [] Multipole forces
-- [] Multipole class?
-- [] Multipole translation
+- [] Multipole shapes
+- [] Multipole shapes adelberger
+- [] multipole shape comparisons
+- [X] Multipole translation
 - [X] More tests
 - [] Always more tests!
 - [] pip package
 - [] More Doc Strings
-- [] Pull request to Charlie's Octave version?
+- [X] Pull request to Charlie's Octave version?
 - [X] Outer Multipoles from point-mass
-- [] Example visualization
+- [X] Example visualization
