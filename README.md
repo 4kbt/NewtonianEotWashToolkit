@@ -15,7 +15,7 @@ components.
 
 We can also simply visualize the point mass arrays using a 3-d plot.
 
-![Example: Three cylinders comprising object 1(blue), and object 2(orange)](/images/glibEx.png)
+![Example: Three cylinders comprising object 1(blue), and object 2(orange)](/python-src/example/glibEx.png)
 
 ### Python implementation
 
@@ -52,9 +52,9 @@ Adelberger.
 - [X] Multipole rotations
 - [X] Multipole torques
 - [] Multipole forces
-- [] Multipole shapes
-- [] Multipole shapes adelberger
-- [] multipole shape comparisons
+- [X] Multipole shapes
+- [X] Multipole shapes adelberger
+- [X] multipole shape comparisons
 - [X] Multipole translation
 - [X] More tests
 - [] Always more tests!
