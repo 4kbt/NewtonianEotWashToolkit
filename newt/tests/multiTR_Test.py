@@ -155,4 +155,4 @@ def test_rotateA2():
     alpha = -np.pi/4
     qm1b = pgm.qmoments(10, glb.rotate_point_array(m1, alpha, [0, 0, 1]))
     qm1c = rot.rotate_qlm(qm1, alpha, 0, 0)
-    assert (abs(qm1c-qm1b) < 15*np.finfo(float).eps).all()
+    assert (abs(qm1c-qm1b) < 20*np.finfo(float).eps).all()

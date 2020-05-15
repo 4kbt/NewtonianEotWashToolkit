@@ -6,11 +6,12 @@ before_install:
   - pip install -U pip
   - pip install -U wheel
   - pip install -U pytest
+  - pip install pytest-cov
 install:
   - pip install numpy
   - pip install scipy
   - pip install matplotlib
-  - pip install ".[test]" . # install package + test dependencies (blog.travis-ci.com/2019-08-07-extensive-python-testing-on-travis-ci
+  - pip install -e . # install package + test dependencies (blog.travis-ci.com/2019-08-07-extensive-python-testing-on-travis-ci
 # command to run tests
 script:
-  - pytest --cov-report=xml --cov=newt newt\tests\
+  - python -m pytest --cov=newt newt/tests/  # see if automatic discovery with coverage report
