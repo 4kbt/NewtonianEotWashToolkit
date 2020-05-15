@@ -1,5 +1,5 @@
-# NEWT (Newtonian E&oml;t-Wash Toolkit)
-## A package for calculating forces and torques with Newtonian gravity from the E&oml;t-Wash group
+# NEWT (Newtonian E&ouml;t-Wash Toolkit)
+## A package for calculating forces and torques with Newtonian gravity from the E&ouml;t-Wash group
 ### Author (Octave): Charlie Hagedorn
 ### Author (Python): John G. Lee
 

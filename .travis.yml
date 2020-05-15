@@ -10,7 +10,7 @@ install:
   - pip install numpy
   - pip install scipy
   - pip install matplotlib
-  - pip install newt
+  - pip install ".[test]" . # install package + test dependencies (blog.travis-ci.com/2019-08-07-extensive-python-testing-on-travis-ci
 # command to run tests
 script:
   - pytest --cov-report=xml --cov=newt newt\tests\
