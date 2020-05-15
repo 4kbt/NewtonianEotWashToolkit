@@ -1,0 +1,16 @@
+language: python
+python:
+  - "3.6"
+before_install:
+  - python --version
+  - pip install -U pip
+  - pip install -U wheel
+  - pip install -U pytest
+install:
+  - pip install numpy
+  - pip install scipy
+  - pip install matplotlib
+  - pip install newt
+# command to run tests
+script:
+  - pytest --cov-report=xml --cov=newt newt\tests\

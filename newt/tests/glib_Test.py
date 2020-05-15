@@ -6,9 +6,9 @@ Created on Fri Apr 17 13:19:23 2020
 """
 import numpy as np
 import numpy.random as rand
-import glib as glb
-import glibShapes as gshp
-import pg2Multi as mom
+import newt.glib as glb
+import newt.glibShapes as gshp
+import newt.pg2Multi as pgm
 
 
 def test_gmmr2_force():
@@ -302,7 +302,7 @@ def test_ylm():
     """
     Check that the Y00 gives the correct value.
     """
-    y00 = mom.qmoment(0, 0, np.array([[1, 1, 0, 0]]))
+    y00 = pgm.qmoment(0, 0, np.array([[1, 1, 0, 0]]))
     assert abs(y00 - 1/np.sqrt(4*np.pi)) < 4*np.finfo(float).eps
 
 
@@ -319,11 +319,11 @@ def test_qmom():
     https://journals.aps.org/prd/abstract/10.1103/PhysRevD.55.7970
     """
     m = np.array([[1, 1, 0, 0], [-1, -1, 0, 0]])
-    q33 = mom.qmoment(3, 3, m)
-    q11 = mom.qmoment(1, 1, m)
+    q33 = pgm.qmoment(3, 3, m)
+    q11 = pgm.qmoment(1, 1, m)
     mb = np.array([[1, 2, 0, 0], [-1, -2, 0, 0]])
-    q33b = mom.qmoment(3, 3, mb)
-    q11b = mom.qmoment(1, 1, mb)
+    q33b = pgm.qmoment(3, 3, mb)
+    q11b = pgm.qmoment(1, 1, mb)
     assert abs(q33 + np.sqrt(35/16/np.pi)) < 10*np.finfo(float).eps
     assert abs(q33b + 8*np.sqrt(35/16/np.pi)) < 10*np.finfo(float).eps
     assert abs(q11 + np.sqrt(3/2/np.pi)) < 10*np.finfo(float).eps
@@ -343,11 +343,11 @@ def test_Qmom():
     https://journals.aps.org/prd/abstract/10.1103/PhysRevD.55.7970
     """
     m = np.array([[1, 1, 0, 0], [-1, -1, 0, 0]])
-    Q31 = mom.Qmomentb(3, 1, m)
-    Q33 = mom.Qmomentb(3, 3, m)
+    Q31 = pgm.Qmomentb(3, 1, m)
+    Q33 = pgm.Qmomentb(3, 3, m)
     mb = np.array([[1, 2, 0, 0], [-1, -2, 0, 0]])
-    Q31b = mom.Qmomentb(3, 1, mb)
-    Q33b = mom.Qmomentb(3, 3, mb)
+    Q31b = pgm.Qmomentb(3, 1, mb)
+    Q33b = pgm.Qmomentb(3, 3, mb)
     assert abs(Q31 - np.sqrt(21/16/np.pi)) < 10*np.finfo(float).eps
     assert abs(Q33 + np.sqrt(35/16/np.pi)) < 10*np.finfo(float).eps
     assert abs(Q31b - np.sqrt(21/16/np.pi)/16) < 10*np.finfo(float).eps

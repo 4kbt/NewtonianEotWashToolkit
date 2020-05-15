@@ -5,10 +5,10 @@ Created on Thu Apr 23 20:10:14 2020
 @author: John
 """
 import numpy as np
-import glib as glb
-import pg2Multi as pgm
-import translations as trs
-import rotations as rot
+import newt.glib as glb
+import newt.pg2Multi as pgm
+import newt.translations as trs
+import newt.rotations as rot
 
 
 def test_q2Q():
