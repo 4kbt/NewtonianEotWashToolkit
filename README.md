@@ -1,4 +1,5 @@
-# Point Gravity
+# NEWT (Newtonian E&ouml;t-Wash Toolkit)
+## A package for calculating forces and torques with Newtonian gravity from the E&ouml;t-Wash group
 ### Author (Octave): Charlie Hagedorn
 ### Author (Python): John G. Lee
 
@@ -15,12 +16,38 @@ components.
 
 We can also simply visualize the point mass arrays using a 3-d plot.
 
-![Example: Three cylinders comprising object 1(blue), and object 2(orange)](/python-src/example/glibEx.png)
+![Example: Three cylinders comprising object 1(blue), and object 2(orange)](/newt/example/glibEx.png)
 
 ### Python implementation
 
 The python implementation of PointGravity is a nearly identical framework of
-the work of Dr. Charlie Hagedorn. However, the second portion of this package
+the work of Dr. Charlie Hagedorn. For instance, to generate the figure shown
+above:
+
+ 
+```python
+import numpy as np
+import newt.glib as glb
+import newt.glibShapes as gshp
+
+# Create a cylinder
+cyl = gshp.annulus(1, 0, 1, 1, 10, 10)
+# Inner cylinders on radius of 1m
+cyl1 = glb.translate_point_array(cyl, [5, 0, 0])
+# Outer cylinders on radius of 5m
+cyl2 = glb.translate_point_array(cyl, [20, 0, 0])
+# Combination of three inner cylinders
+m1 = np.concatenate([cyl1, glb.rotate_point_array(cyl1, 2*np.pi/3, [0, 0, 1]),
+                     glb.rotate_point_array(cyl1, -2*np.pi/3, [0, 0, 1])])
+# Combination of three outer cylinders
+m2 = np.concatenate([cyl2, glb.rotate_point_array(cyl2, 2*np.pi/3, [0, 0, 1]),
+                     glb.rotate_point_array(cyl2, -2*np.pi/3, [0, 0, 1])])
+fig, ax = glb.display_points(m1, m2)
+ax.set_zlim([-20, 20])
+```
+
+
+However, the second portion of this package
 includes the implementation of a multipole analysis for the same calculations.
 It is well known that the gravitational potential can be decomposed into
 interactions of multipole moments allowing for accurate and fast calculations
@@ -51,15 +78,15 @@ Adelberger.
 ### To Do
 - [X] Multipole rotations
 - [X] Multipole torques
-- [] Multipole forces
+- [_] Multipole forces
 - [X] Multipole shapes
 - [X] Multipole shapes adelberger
 - [X] multipole shape comparisons
 - [X] Multipole translation
 - [X] More tests
-- [] Always more tests!
-- [] pip package
-- [] More Doc Strings
-- [X] Pull request to Charlie's Octave version?
+- [_] Always more tests!
+- [_] pip package
+- [_] More Doc Strings
+- [X] Pull request to Charlie's Octave version &#8594; Collaborator
 - [X] Outer Multipoles from point-mass
 - [X] Example visualization

@@ -6,7 +6,7 @@ Created on Sat Mar 21 13:45:28 2020
 """
 import numpy as np
 import scipy.special as sp
-import clebschGordan as cg
+import newt.clebschGordan as cg
 
 
 def translate_qlm(qlm, rPrime, LMax=10):

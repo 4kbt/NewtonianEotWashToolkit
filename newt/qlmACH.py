@@ -2,7 +2,7 @@
 """
 Created on Wed Apr 29 20:09:40 2020
 
-@author: John
+@author: John Greendeer Lee
 """
 import numpy as np
 import scipy.special as sp

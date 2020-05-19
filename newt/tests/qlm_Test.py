@@ -2,14 +2,13 @@
 """
 Created on Thu Apr 30 18:13:35 2020
 
-@author: John
+@author: John Greendeer Lee
 """
-
 import numpy as np
-import qlm as qlm
-import qlmACH as qlmA
-import translations as trs
-import rotations as rot
+import newt.qlm as qlm
+import newt.qlmACH as qlmA
+import newt.translations as trs
+import newt.rotations as rot
 
 
 def test_cylinder():

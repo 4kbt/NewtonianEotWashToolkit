@@ -5,7 +5,7 @@ Created on Sun Apr 26 15:50:56 2020
 @author: John Greendeer Lee
 """
 import numpy as np
-import glibShapes as gshp
+import newt.glibShapes as gshp
 
 
 def test_annulus():

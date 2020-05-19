@@ -108,12 +108,19 @@ def qmoments(l, massArray):
     """
     qlms = np.zeros([l+1, 2*l+1], dtype='complex')
     r = np.sqrt(massArray[:, 1]**2 + massArray[:, 2]**2 + massArray[:, 3]**2)
+    rids = np.where(r != 0)[0]
     theta = np.arccos(massArray[:, 3]/r)
     phi = np.arctan2(massArray[:, 2], massArray[:, 1]) % (2*np.pi)
-    for n in range(l+1):
+
+    # Handle q00 case separately to deal with r==0 cases
+    qlm = massArray[:, 0]*np.conj(sp.sph_harm(0, 0, phi, theta))
+    qlms[0, l] = np.sum(qlm)
+
+    for n in range(1, l+1):
         rl = r**n
         for m in range(n+1):
-            qlm = massArray[:, 0]*rl*np.conj(sp.sph_harm(m, n, phi, theta))
+            qlm = np.conj(sp.sph_harm(m, n, phi[rids], theta[rids]))
+            qlm *= massArray[rids, 0]*rl[rids]
             qlms[n, l+m] = np.sum(qlm)
 
     # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
