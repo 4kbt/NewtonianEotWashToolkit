@@ -208,8 +208,7 @@ def test_quadrupole_torque():
         tau[k] = 2*glb.BIG_G*M*m*d*R*np.sin(a)
         tau[k] *= 1/(d2R2-2*d*R*ca)**(3/2) - 1/(d2R2+2*d*R*ca)**(3/2)
         f, ts[k] = glb.point_matrix_gravity(m1, Q)
-    ids = np.where(tau != 0)[0]
-    assert (abs(tau[ids]/ts[ids, 2]-1) < 0.01).all()
+    assert (abs(tau-ts[:, 2]) < 10*np.finfo(float).eps).all()
 
 
 def test_hexapole_torque():
@@ -246,8 +245,7 @@ def test_hexapole_torque():
         tau[k] += np.sin(a+4*np.pi/3)/(d2R2-2*d*R*np.cos(a+4*np.pi/3))**(3/2)
         tau[k] *= fac
         f, ts[k] = glb.point_matrix_gravity(m1, Q)
-    ids = np.where(np.min(abs(tau)) > 1e-20)[0]
-    assert (abs(tau[ids]/ts[ids, 2]-1) < 0.01).all()
+    assert (abs(tau-ts[:, 2]) < 10*np.finfo(float).eps).all()
 
 
 def test_rotate():

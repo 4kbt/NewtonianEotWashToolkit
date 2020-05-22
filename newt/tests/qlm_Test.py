@@ -92,6 +92,8 @@ def test_rect_prism():
     trip8 = rot.rotate_qlm(trip6, np.pi, 0, 0)
     rect4 = trip5+trip6+trip7+trip8
     assert (abs(rect-rect2) < 400*np.finfo(float).eps).all()
+    assert (abs(rect-rect3) < 5e3*np.finfo(float).eps).all()
+    assert (abs(rect-rect4) < 5e3*np.finfo(float).eps).all()
 
 
 def test_ngon():
@@ -106,7 +108,7 @@ def test_ngon():
     trip9 = rot.rotate_qlm(trip8, 2*np.pi/5, 0, 0)
     pent = qlm.ngon_prism(5, 1, 1, 10*np.sin(np.pi/5), 0, 5)
     pent2 = trip5+trip6+trip7+trip8+trip9
-    assert (abs(pent-pent2) < 250*np.finfo(float).eps).all()
+    assert (abs(pent-pent2) < 350*np.finfo(float).eps).all()
 
 
 def test_cone():
@@ -125,8 +127,9 @@ def test_cone():
 
 def test_tetrahedron():
     """
-    Tests tetrahedron function against explicit forumulas. Currently,
-    does not pass for several L>2.
+    Tests tetrahedron function against explicit forumulas.
+
+    XXX: Currently, does not pass for several L>2.
     """
     teta = qlmA.tetrahedron(5, 1, 2, 1, 3)
     tetb = qlm.tetrahedron(5, 1, 2, 1, 3)
@@ -138,8 +141,9 @@ def test_tetrahedron():
 
 def test_pyramid():
     """
-    Tests pyramid function four x,y symmetric right tetrahedrons. Currently,
-    does not pass for L>3.
+    Tests pyramid function four x,y symmetric right tetrahedrons.
+
+    XXX: Currently, does not pass for L>3.
     """
     tetb = qlm.tetrahedron(5, 1, np.sqrt(2), np.sqrt(2), 3)
     tetb = rot.rotate_qlm(tetb, -np.pi/4, 0, 0)
