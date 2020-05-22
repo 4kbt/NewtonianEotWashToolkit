@@ -498,6 +498,68 @@ def ngon_prism(L, mass, H, a, phic, N):
     return qlm
 
 
+def tetrahedron(L, mass, x, y, z):
+    """
+    The tetrahedron has a height H and extends above and below the
+    xy-plane by H/2.
+
+    Inputs
+    ------
+    L : int
+        Maximum order for multipole expansion
+    mass : float
+        Mass of the prism
+    H : float
+        Total height of the prism
+    d : float
+        X-position of first and second vertices
+    y1 : float
+        Y-position of first vertex
+    y2 : float
+        Y-position of second vertex
+    phic : float
+        Average angle of prism
+
+    Returns
+    -------
+    qlm : ndarray, complex
+        (L+1)x(2L+1) array of complex moment values
+    """
+    factor = 6*mass*np.sqrt(1/(4.*np.pi))
+    qlm = np.zeros([L+1, 2*L+1], dtype='complex')
+    if (x <= 0) or (y <= 0) or (z <= 0):
+        return qlm
+
+    for l in range(L+1):
+        fac = factor*np.sqrt(2*l+1)/np.exp(sp.gammaln(l+4))
+        for m in range(l+1):
+            fac2 = fac*np.sqrt(np.exp(sp.gammaln(l+m+1)+sp.gammaln(l-m+1)))
+            for k in range((l-m)//2+1):
+                m2k = m+2*k
+                slk = (-1)**(m+k)*z**(l-m2k)/2**m2k
+                psum = 0
+                for p in range(m+k+1):
+                    ksum = 0
+                    for j in range(k+1):
+                        pj = p+j
+                        kfac = (1j)**pj*(-1)**p*y**pj*x**(m2k-pj)
+                        gampj = sp.gammaln(m2k-pj+1) + sp.gammaln(pj+1)
+                        gampj -= sp.gammaln(j+1) + sp.gammaln(k-j+1)
+                        gampj -= sp.gammaln(p+1) + sp.gammaln(m+k-p+1)
+                        ksum += kfac*np.exp(gampj)
+                    psum += ksum
+                slk *= psum
+                qlm[l, L+m] += slk
+            # Multiply by factor dependent only on (l,m)
+            qlm[l, L+m] *= fac2
+    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
+    ms = np.arange(-L, L+1)
+    mfac = (-1)**(np.abs(ms))
+    qlm += np.conj(np.fliplr(qlm))*mfac
+    qlm[:, L] /= 2
+    return qlm
+
+
 def cyl_mom(L, M, dens, H, R):
     gamFac = np.sqrt(np.exp(sp.gammaln(L-M+1)-sp.gammaln(L+M+1)))
     fact = np.sqrt((2*L+1)/(4*np.pi))*gamFac*sp.factorial(L-M)/(2.*np.pi)

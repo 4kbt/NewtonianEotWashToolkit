@@ -73,18 +73,16 @@ def yukawa_array(mass1, mass2, alpha, lmbd):
         # Pythagoras for modulus
         r = np.sqrt(np.sum(rvec**2))
         # Compute force
-        fac = (1/r**3-1/(r**2*lmbd))
-        force = rvec.T.dot(coef*mass2[0]*np.exp(-r/lmbd))
-        force *= fac
+        fac = (1/r**3 + 1/(r**2*lmbd))
+        force = rvec.T.dot(coef*mass2[0]*np.exp(-r/lmbd)*fac)
     else:
         # Which way does the force act
         rvec = mass2[:, 1:]-mass1[1:]
         # Pythagoras for modulus
         r = np.sqrt(np.sum(rvec**2, 1))
         # compute force
-        fac = (1/r**3-1/(r**2*lmbd))
-        force = rvec.T.dot(coef*mass2[:, 0]*np.exp(-r/lmbd))
-        force *= fac
+        fac = (1/r**3 + 1/(r**2*lmbd))
+        force = rvec.T.dot(coef*mass2[:, 0]*np.exp(-r/lmbd)*fac)
 
     return force
 
@@ -125,7 +123,7 @@ def point_matrix_gravity(mass1, mass2):
     return force, torque
 
 
-def point_matrix_yukawa(mass1, mass2, lmbd):
+def point_matrix_yukawa(mass1, mass2, alpha, lmbd):
     """
     Computes the force and 3-axis torque about the origin on array1 by array2
     from a Yukawa potential with length scale lmbd and gravitational strength.
@@ -136,6 +134,10 @@ def point_matrix_yukawa(mass1, mass2, lmbd):
         Mx4, of form [mass_i, x_i, y_i, z_i]
     mass2 : ndarray
         Nx4, of form [mass_i, x_i, y_i, z_i]
+    alpha : float
+        coupling strength of Yukawa interaction scaled by BIG_G
+    lmbd : float
+        Yukawa interaction length scale
 
     Returns
     -------
@@ -148,11 +150,11 @@ def point_matrix_yukawa(mass1, mass2, lmbd):
     torque = np.zeros(3)
 
     if np.ndim(mass1) == 1:
-        force = yukawa_array(mass1, mass2, lmbd)
+        force = yukawa_array(mass1, mass2, alpha, lmbd)
         torque = np.cross(mass1[1:], force)
     else:
         for k in range(len(mass1)):
-            forceK = yukawa_array(mass1[k, :], mass2, lmbd)
+            forceK = yukawa_array(mass1[k, :], mass2, alpha, lmbd)
             torqueK = np.cross(mass1[k, 1:], forceK)
 
             force += forceK

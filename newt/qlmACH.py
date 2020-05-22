@@ -13,6 +13,24 @@ def rect_prism(L, rho, x, y, z):
     Inner multipoles of a rectangular box centered on the origin and specified
     by positive quantities x, y, and z - its dimensions along xhat, yhat, and
     zhat. Values are only known up to L=5. The density is given by rho.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    rho : float
+        Density in kg/m^3
+    x : float
+        Total length along x axis. Centered about x=0.
+    y : float
+        Total width along y axis. Centered about y=0.
+    z : float
+        Total height along z axis. Centered about z=0.
+
+    Returns
+    -------
+    qlm : ndarray
+        (L+1)x(2L+1) complex array of inner moments
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (z <= 0):
@@ -40,6 +58,29 @@ def annulus(L, rho, H, Ri, Ro, phic, phih):
     Cylindrical annulus with axis of symmetry along zhat and symmetric about
     the xy-plane. Phic and phih are defined to match qlm.annulus inputs. Values
     are only known up to L=5. The density is given by rho.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    rho : float
+        Density in kg/m^3
+    H : float
+        Total height along z axis. Centered about z=0.
+    Ri : float
+        Inner radius of annulus
+    Ro : float
+        Outer radius of annulus
+    phic : float
+        Central angle of annular section
+    phih : float
+        Half angular width of annular section
+
+
+    Returns
+    -------
+    qlm : ndarray
+        (L+1)x(2L+1) complex array of inner moments
     """
     phih = phih % (2*np.pi)
     dphi = phih*2
@@ -96,6 +137,24 @@ def cone(L, rho, h, r1, r2):
     lower radii, r1 and r2, and height h>0. The cone extends a distance h/2
     above and below the xy-plane. Complete cones have vanishing values of r1 or
     r2. Moments given out to L=5.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    rho : float
+        Density in kg/m^3
+    h : float
+        Total height along z axis. Centered about z=0.
+    r1 : float
+        Radius of lower section of cone
+    r2 : float
+        Radius of upper section of cone
+
+    Returns
+    -------
+    qlm : ndarray
+        (L+1)x(2L+1) complex array of inner moments
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (h <= 0):
@@ -149,6 +208,26 @@ def tri_prism(L, rho, h, d, y1, y2):
     triangular faces have vertices at (x,y)=(0,0), (d,y1), and (d,y2). The
     restriction that one side be parallel to yhat is easily overcome using the
     rotational properties of the moments. Moments out to L=5.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    rho : float
+        Density in kg/m^3
+    h : float
+        Total height along z axis. Centered about z=0.
+    d : float
+        Length along x axis.
+    y1 : float
+        Position of first vertex along y-axis
+    y2 : float
+        Position of second vertex along y-axis
+
+    Returns
+    -------
+    qlm : ndarray
+        (L+1)x(2L+1) complex array of inner moments
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (h <= 0):
@@ -207,6 +286,24 @@ def tetrahedron(L, rho, x, y, z):
     defined by points at corrdinates x, y, and z along the xhat, yhat, and zhat
     axes respectively. Values are only known up to L=5. The density is given by
     rho.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    rho : float
+        Density in kg/m^3
+    x : float
+        Distance to vertex along x-axis
+    y : float
+        Distance to vertex along y-axis
+    z : float
+        Distance to vertex along z-axis
+
+    Returns
+    -------
+    qlm : ndarray
+        (L+1)x(2L+1) complex array of inner moments
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (z <= 0):
@@ -219,7 +316,8 @@ def tetrahedron(L, rho, x, y, z):
     qlm[2, L+1] = -q00*3*z*(x-1j*y)/(4*np.sqrt(30))
     qlm[2, L+2] = q00*3*(x**2 - 1j*x*y - y**2)/(4*np.sqrt(30))
     qlm[3, L] = -q00*z*(x**2 + y**2 - 2*z**2)*np.sqrt(7)/40
-    qlm[3, L+1] = q00*(3*x**3-1j*x**2*y+x*y**2-2j*y**3-4*(x-1j*y)*z**2)
+    #qlm[3, L+1] = q00*(3*x**3-1j*x**2*y+x*y**2-3j*y**3-4*(x-1j*y)*z**2)
+    qlm[3, L+1] = q00*(3*x**3-1j*x**2*y+x*y**2-3j*y**3-5*(x-1j*y)*z**2)
     qlm[3, L+1] *= np.sqrt(7/3)/80
     qlm[3, L+2] = q00*z*(x**2-1j*x*y-y**2)*np.sqrt(7/30)/8
     qlm[3, L+3] = -q00*(x**2-y**2)*(x-1j*y)*np.sqrt(7/5)/16
@@ -260,6 +358,22 @@ def cylhole(L, rho, r, R):
     of radius r into a cylinder of radius R. The symmetry axis of the hole is
     along zhat, and the cylinder has its symmetry axis along yhat. The moments
     requre the hypergeometric function 2F1(a, b; c; x). Moments out to L=5.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    rho : float
+        Density in kg/m^3
+    r : float
+        Radius of smaller cylinder hole
+    R : float
+        Radius of larger cylinder
+
+    Returns
+    -------
+    qlm : ndarray
+        (L+1)x(2L+1) complex array of inner moments
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (r <= 0) or (R < r):
@@ -294,24 +408,43 @@ def platehole(L, rho, t, r, theta):
     centered on the xy-plane. The hole axis, which passes through the origin,
     lies in the xz-plane at an angle theta measured from zhat, where -pi/2 <
     theta < pi/2. Values are only known up to L=5. The density is given by rho.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    rho : float
+        Density in kg/m^3
+    t : float
+        Thickness of rectangular plate, centered on xy-plane
+    r : float
+        Radius of cylindrical hole
+    theta : float
+        Angle of hole relative to z axis, tilted toward x axis.
+
+    Returns
+    -------
+    qlm : ndarray
+        (L+1)x(2L+1) complex array of inner moments
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (r <= 0) or (t <= 0) or (abs(theta) > np.pi/2):
         return qlm
     s = np.tan(theta)
-    q00 = rho*t*r**2*np.sqrt(np.pi)*(1+s**2)/2
+    q00 = rho*t*r**2*np.sqrt(np.pi*(1+s**2))/2
     qlm[0, L] = q00
-    qlm[2, L] = q00*(3*r**2*(s**2+2)+t**2*(s**2-2))*np.sqrt(5)/24
+    qlm[2, L] = -q00*(3*r**2*(s**2+2) + t**2*(s**2-2))*np.sqrt(5)/24
     qlm[2, L+1] = -q00*t**2*s*np.sqrt(5/6)/4
+    qlm[2, L+2] = q00*s**2*(3*r**2+t**2)*np.sqrt(5/6)/8
     q40 = 10*r**4*(8+8*s**2+3*s**4) + 10*t**2*r**2*(3*s**4-8)
     q40 += t**4*(8-24*s**2+3*s**4)
-    qlm[4, L] = -q00*q40*3/640
-    q41 = t**2*s*(5*r**2*(r+3*s**2) + t**2*(3*s**2-4))
-    qlm[4, L+1] = -q00*q41*3/(64*np.sqrt(5))
-    q42 = s**2*(10*r**4*(s**2+2)+10*(r*s*t)**2+t**4*(s**2-6))
-    qlm[4, L+2] = q00*q42*3/(64*np.sqrt(10))
-    qlm[4, L+3] = q00*s**3*t**2*(5*r**2+t**2)*np.sqrt(7/5)*3/64
-    qlm[4, L+4] = -q00*s**4*(10*r**4+10*r**2*t**2+t**4)*np.sqrt(7/10)*3/128
+    qlm[4, L] = q00*q40*3/640
+    q41 = t**2*s*(5*r**2*(4+3*s**2) + t**2*(3*s**2-4))
+    qlm[4, L+1] = q00*q41*3/(64*np.sqrt(5))
+    q42 = s**2*(10*r**4*(s**2+2) + 10*(r*s*t)**2 + t**4*(s**2-6))
+    qlm[4, L+2] = -q00*q42*3/(64*np.sqrt(10))
+    qlm[4, L+3] = -q00*s**3*(t**4 + 5*r**2*t**2)*np.sqrt(7/5)*3/64
+    qlm[4, L+4] = q00*s**4*(10*r**4+10*r**2*t**2+t**4)*np.sqrt(7/10)*3/128
 
     # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
     ms = np.arange(-L, L+1)
@@ -327,11 +460,29 @@ def pyramid(L, rho, h, x, y):
     and y lies in the xy-plane centered about the origin, and whose apex is at
     (x,y,z) = (0,0,h). Values are only known up to L=5. The density is given by
     rho.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    rho : float
+        Density in kg/m^3
+    h : float
+        Height along z-axis
+    x : float
+        Total length along x-axis, centered on x=0.
+    y : float
+        Total length along y-axis, centered on y=0.
+
+    Returns
+    -------
+    qlm : ndarray
+        (L+1)x(2L+1) complex array of inner moments
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (h <= 0):
         return qlm
-    q00 = rho*h*x*y/(6*np.pi)
+    q00 = rho*h*x*y/(6*np.sqrt(np.pi))
     qlm[0, L] = q00
     qlm[1, L] = q00*h*np.sqrt(3)/4
     qlm[2, L] = q00*(4*h**2-x**2-y**2)/(8*np.sqrt(5))

@@ -61,6 +61,42 @@ def test_cone():
     assert (np.average(cone2[:, 1:3], 0) < 10*np.finfo(float).eps).all()
 
 
+def test_tri_prism():
+    """
+    Check that center of mass for a triangular prism centered on the z-axis, on
+    xy plane, whether we have an even or odd number of grid points in z.
+
+    Tests
+    -----
+    tri_prism : function
+    """
+    pEven = 16
+    pOdd = 15
+    tri = gshp.tri_prism(1, 1, 1, 2, 1, pEven, pEven, pEven)
+    tri2 = gshp.tri_prism(1, 1, 1, 2, 1, pOdd, pOdd, pOdd)
+    assert (np.average(tri[:, 3]) < 10*np.finfo(float).eps).all()
+    assert (np.average(tri2[:, 3]) < 10*np.finfo(float).eps).all()
+
+
+def test_wedge():
+    """
+    Check that center of mass for a annular section centered about y and z,
+    whether we have an even or odd number of grid points in y or z.
+
+    Tests
+    -----
+    wedge : function
+    """
+    pEven = 16
+    pOdd = 15
+    wedge = gshp.wedge(1, 1, 2, 1, np.pi/6, pEven, pEven)
+    wedge2 = gshp.wedge(1, 1, 2, 1, np.pi/6, pOdd, pOdd)
+    assert (np.average(wedge[:, 3]) < 10*np.finfo(float).eps).all()
+    assert (np.average(wedge2[:, 3]) < 10*np.finfo(float).eps).all()
+    assert (np.average(wedge[:, 2]) < 10*np.finfo(float).eps).all()
+    assert (np.average(wedge2[:, 2]) < 10*np.finfo(float).eps).all()
+
+
 def test_shell():
     """
     Check that the radius and mass and quadrupole check out.
