@@ -10,6 +10,14 @@ import newt.multiForce as mfor
 
 
 def test_force1():
+    """
+    Test gravitational force from point mass at a meter on a point mass at the
+    origin.
+
+    Tests
+    -----
+    mfor.multipole_force : function
+    """
     m1 = np.array([[1, 0, 0, 0]])
     m2 = np.array([[1, 1, 0, 0]])
     q1 = pgm.qmoments(10, m1)
@@ -27,6 +35,14 @@ def test_force1():
 
 
 def test_force2():
+    """
+    Test gravitational force from point mass at two meters on point mass away
+    from the origin.
+
+    Tests
+    -----
+    mfor.multipole_force : function
+    """
     m1b = np.array([[1, 0, 0, 1]])
     m2 = np.array([[1, 0, 0, 2]])
     q1b = pgm.qmoments(20, m1b)

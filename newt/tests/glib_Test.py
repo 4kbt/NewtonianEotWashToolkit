@@ -18,7 +18,7 @@ def test_gmmr2_force():
 
     Tests
     -----
-    point_matrix_gravity : function
+    glb.point_matrix_gravity : function
     """
     m1 = np.array([1, 0, 0, 0])
     m2 = np.array([1, 1, 0, 0])
@@ -31,19 +31,18 @@ def test_gmmr2_force():
 
 def test_yuk_force():
     """
-    XXX fix me
     Check that the force between to 1kg points at a meter = BIG_G in xHat
     and zero in y,z. Also, expect no torques on point at origin.
 
     Tests
     -----
-    point_matrix_gravity : function
+    glb.point_matrix_gravity : function
     """
     m1 = np.array([1, 0, 0, 0])
     m2 = np.array([1, 1, 0, 0])
-    f, t = glb.point_matrix_gravity(m1, m2)
-    fG = glb.BIG_G
-    assert abs(f[0] - fG) < 2.*np.finfo(float).eps
+    f, t = glb.point_matrix_yukawa(m1, m2, 1, 1)
+    fY = glb.BIG_G*2/np.e
+    assert abs(f[0] - fY) < 2.*np.finfo(float).eps
     assert (abs(f[1:]) < 2.*np.finfo(float).eps).all()
     assert (abs(t) < 2*np.finfo(float).eps).all()
 
@@ -55,7 +54,7 @@ def test_gmmr2_torque():
 
     Tests
     -----
-    point_matrix_gravity : function
+    glb.point_matrix_gravity : function
     """
     m1 = np.array([1, 0, 1, 0])
     m2 = np.array([1, 1, 1, 0])
@@ -67,11 +66,30 @@ def test_gmmr2_torque():
     assert abs(t[2] + fG) < 2*np.finfo(float).eps
 
 
+def test_yuk_torque():
+    """
+    Check that the force between to 1kg points at a meter = BIG_G in xHat
+    and zero in y,z. Also, expect no torques on point at origin.
+
+    Tests
+    -----
+    glb.point_matrix_gravity : function
+    """
+    m1 = np.array([1, 0, 1, 0])
+    m2 = np.array([1, 1, 1, 0])
+    f, t = glb.point_matrix_yukawa(m1, m2, 1, 1)
+    fY = glb.BIG_G*2/np.e
+    assert abs(f[0] - fY) < 2.*np.finfo(float).eps
+    assert (abs(f[1:]) < 2.*np.finfo(float).eps).all()
+    assert (abs(t[:2]) < 2*np.finfo(float).eps).all()
+    assert abs(t[2] + fY) < 2*np.finfo(float).eps
+
+
 def test_ISL():
     """
     Tests
     -----
-    point_matrix_gravity : function
+    glb.point_matrix_gravity : function
     """
     m = gshp.annulus(1, 0, 1, 1, 10, 5)
     for k in range(100):
@@ -96,7 +114,7 @@ def test_sheet_uniformity():
 
     Tests
     -----
-    point_matrix_gravity : function
+    glb.point_matrix_gravity : function
     """
     m = np.array([1, 0, 0, 0])
     N = 100
@@ -127,7 +145,7 @@ def test_shell_theorem():
 
     Tests
     -----
-    point_matrix_gravity : function
+    glb.point_matrix_gravity : function
     """
     d = 20
     R = 10
@@ -152,7 +170,17 @@ def test_shell_theorem():
 
 
 def test_yukawa_shell_theorem():
-    return True
+    """
+    The shell theorem also partly holds for the Yukawa potential. A point at
+    the origin experiences no force from a spherical shell.
+    """
+    R = 10
+    shell = gshp.spherical_random_shell(1, R, 100000)
+    # A point outside should see force from point at origin of shell mass 1kg
+    m1 = np.array([1, 0, 0, 0])
+    F, T = glb.point_matrix_yukawa(m1, shell, 1, 1)
+    threshold = 6*np.finfo(float).eps
+    assert (abs(F) < 10*threshold).all()
 
 
 def test_quadrupole_torque():
@@ -162,7 +190,7 @@ def test_quadrupole_torque():
 
     Tests
     -----
-    point_matrix_gravity : function
+    glb.point_matrix_gravity : function
     """
     d = 1
     R = rand.rand()*100 + 1.1
@@ -191,7 +219,7 @@ def test_hexapole_torque():
 
     Tests
     -----
-    point_matrix_gravity : function
+    glb.point_matrix_gravity : function
     """
     d = 1
     z = rand.randn()*10
@@ -228,7 +256,7 @@ def test_rotate():
 
     Tests
     -----
-    rotate_point_array : function
+    glb.rotate_point_array : function
     """
     m = np.array([1, 1, 0, 0])
     o = glb.rotate_point_array(m, np.pi/2., [0, 0, 1])
@@ -242,7 +270,7 @@ def test_rotate2():
 
     Tests
     -----
-    rotate_point_array : function
+    glb.rotate_point_array : function
     """
     m = np.array([1, 1, 0, 0])
     err = np.zeros([100, 4])
@@ -261,7 +289,7 @@ def test_rotate3():
 
     Tests
     -----
-    rotate_point_array : function
+    glb.rotate_point_array : function
     """
     q = np.array([1, 1, 0, 0])
     N = 100
@@ -276,6 +304,10 @@ def test_rotate3():
 def test_translate():
     """
     Check that moving a point mass at the origin to [1, 1, 1] works.
+
+    Tests
+    -----
+    glb.translate_point_array : function
     """
     m = np.array([1, 0, 0, 0])
     o = glb.translate_point_array(m, [1, 1, 1])
@@ -286,6 +318,10 @@ def test_translate2():
     """
     Check that translating 6 normally distributed masses keeps masses the same
     and deviation the same.
+
+    Tests
+    -----
+    glb.translate_point_array : function
     """
     N = 6
     for k in range(100):
@@ -301,6 +337,10 @@ def test_translate2():
 def test_ylm():
     """
     Check that the Y00 gives the correct value.
+
+    Tests
+    -----
+    pgm.qmoment : function
     """
     y00 = pgm.qmoment(0, 0, np.array([[1, 1, 0, 0]]))
     assert abs(y00 - 1/np.sqrt(4*np.pi)) < 4*np.finfo(float).eps
@@ -312,7 +352,7 @@ def test_qmom():
 
     Tests
     -----
-    qmoment : function
+    pgm.qmoment : function
 
     Reference
     ---------
@@ -336,7 +376,7 @@ def test_Qmom():
 
     Tests
     -----
-    Qmomentb : function
+    pgm.Qmomentb : function
 
     Reference
     ---------

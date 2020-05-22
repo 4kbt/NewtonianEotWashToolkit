@@ -10,15 +10,6 @@ import scipy.special as sp
 BIG_G = 6.67428e-11
 
 
-def id2lm(idx):
-    """
-    Changes between specified index to (l,m) pair
-    """
-    ql = int(np.sqrt(2*idx))-1
-    qm = idx-(ql*(ql+1))//2
-    return ql, qm
-
-
 def qmoment(l, m, massArray):
     """
     Computes the small q(l, m) inner multipole moment of a point mass array by
@@ -39,9 +30,13 @@ def qmoment(l, m, massArray):
         Complex-valued inner multipole moment
     """
     r = np.sqrt(massArray[:, 1]**2 + massArray[:, 2]**2 + massArray[:, 3]**2)
-    theta = np.arccos(massArray[:, 3]/r)
-    phi = np.arctan2(massArray[:, 2], massArray[:, 1]) % (2*np.pi)
-    qlm = massArray[:, 0]*r**l*np.conj(sp.sph_harm(m, l, phi, theta))
+    rids = np.where(r != 0)[0]
+    theta = np.arccos(massArray[rids, 3]/r[rids])
+    phi = np.arctan2(massArray[rids, 2], massArray[rids, 1]) % (2*np.pi)
+    if l == 0:
+        qlm = massArray[:, 0]/np.sqrt(4*np.pi)
+    else:
+        qlm = massArray[:, 0]*r**l*np.conj(sp.sph_harm(m, l, phi, theta))
     qlm = np.sum(qlm)
     return qlm
 
@@ -76,16 +71,39 @@ def Qmomentb(l, m, massArray):
     return qlm
 
 
-def jmoment(l, m, massArray):
+def imoment(l, m, lmbd, massArray):
+    """
+    Computes the small i(l, m) inner Yukawa multipole moment of a point mass
+    array by evaluating the spherical harmonic and modified spherical bessel
+    function at each point-mass position.
+
+    Inputs
+    ------
+    l : int
+        Multipole moment order
+    m : int
+        Multipole moment order, m < l
+    lmbd : float
+        Yukawa length scale
+    massArray : ndarray
+        Nx4 array of point masses [m, x, y, z]
+
+    Returns
+    -------
+    ilm : complex
+        Complex-valued inner multipole moment
+    """
     r = np.sqrt(massArray[:, 1]**2 + massArray[:, 2]**2 + massArray[:, 3]**2)
-    jvals = np.zeros(len(r))
-    theta = np.arccos(massArray[:, 3]/r)
-    phi = np.arctan2(massArray[:, 2], massArray[:, 1]) % (2*np.pi)
-    for k in range(len(r)):
-        jvals[k] = sp.sph_jn(l, r[k])[0][-1]
-    ylm = massArray[:, 0]*jvals*np.conj(sp.sph_harm(m, l, phi, theta))
-    ylm = np.sum(ylm)
-    return ylm
+    rids = np.where(r != 0)[0]
+    theta = np.arccos(massArray[rids, 3]/r[rids])
+    phi = np.arctan2(massArray[rids, 2], massArray[rids, 1]) % (2*np.pi)
+    il = sp.spherical_in(l, r/lmbd)
+    if l == 0:
+        ilm = massArray[:, 0]*il/np.sqrt(4*np.pi)
+    else:
+        ilm = massArray[:, 0]*il*np.conj(sp.sph_harm(m, l, phi, theta))
+    ilm = np.sum(ilm)
+    return ilm
 
 
 def qmoments(l, massArray):
@@ -109,11 +127,11 @@ def qmoments(l, massArray):
     qlms = np.zeros([l+1, 2*l+1], dtype='complex')
     r = np.sqrt(massArray[:, 1]**2 + massArray[:, 2]**2 + massArray[:, 3]**2)
     rids = np.where(r != 0)[0]
-    theta = np.arccos(massArray[:, 3]/r)
-    phi = np.arctan2(massArray[:, 2], massArray[:, 1]) % (2*np.pi)
+    theta = np.arccos(massArray[rids, 3]/r[rids])
+    phi = np.arctan2(massArray[rids, 2], massArray[rids, 1]) % (2*np.pi)
 
     # Handle q00 case separately to deal with r==0 cases
-    qlm = massArray[:, 0]*np.conj(sp.sph_harm(0, 0, phi, theta))
+    qlm = massArray[:, 0]/np.sqrt(4*np.pi)
     qlms[0, l] = np.sum(qlm)
 
     for n in range(1, l+1):
@@ -174,27 +192,52 @@ def Qmomentsb(l, massArray):
     return Qlmsb
 
 
-def jmoments(l, massArray):
+def imoments(l, lmbd, massArray):
+    """
+    Computes all i(l, m) inner Yukawa multipole moments of a point mass array
+    up to a given maximum order, l. It does so by evaluating the spherical
+    harmonic and modified spherical bessel function at each point-mass
+    position.
+
+    Inputs
+    ------
+    l : int
+        Maximum multipole moment order
+    lmbd : float
+        Yukawa length scale
+    massArray : ndarray
+        Nx4 array of point masses [m, x, y, z]
+
+    Returns
+    -------
+    ilms : ndarry, complex
+        Complex-valued inner Yukawa multipole moments up to order l.
+    """
+    ilms = np.zeros([l+1, 2*l+1], dtype='complex')
     r = np.sqrt(massArray[:, 1]**2 + massArray[:, 2]**2 + massArray[:, 3]**2)
-    theta = np.arccos(massArray[:, 3]/r)
-    phi = np.arctan2(massArray[:, 2], massArray[:, 1]) % (2*np.pi)
+    rids = np.where(r != 0)[0]
+    theta = np.arccos(massArray[rids, 3]/r[rids])
+    phi = np.arctan2(massArray[rids, 2], massArray[rids, 1]) % (2*np.pi)
 
-    nlm = (l+1)*(l+2)//2
-    nP = len(r)
-    ylms = np.zeros([nlm, nP], dtype='complex')
-    jvals = np.zeros([nP, l+1])
-    for k in range(nP):
-        jvals[k] = sp.sph_jn(l, r[k])[0]
+    # Handle q00 case separately to deal with r==0 cases
+    i0 = sp.spherical_in(0, r/lmbd)
+    ilm = massArray[:, 0]*i0/np.sqrt(4*np.pi)
+    ilms[0, l] = np.sum(ilm)
 
-    ctr = 0
-    for n in range(l+1):
+    for n in range(1, l+1):
+        il = sp.spherical_in(l, r/lmbd)
         for m in range(n+1):
-            print(l, m)
-            ylms[ctr] = massArray[:, 0]*jvals[:, n]*np.conj(sp.sph_harm(m, n, phi, theta))
-            ctr += 1
+            ilm = np.conj(sp.sph_harm(m, n, phi[rids], theta[rids]))
+            ilm *= massArray[rids, 0]*il[rids]
+            ilms[n, l+m] = np.sum(ilm)
 
-    ylms = np.sum(ylms, 1)
-    return ylms
+    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
+    ms = np.arange(-l, l+1)
+    fac = (-1)**(np.abs(ms))
+    ilms += np.conj(np.fliplr(ilms))*fac
+    ilms[:, l] /= 2
+
+    return ilms
 
 
 def torque_lm(qlm, Qlm, L=None):
@@ -254,17 +297,20 @@ def torque_lm(qlm, Qlm, L=None):
 
 def embed_qlm(qlm, LNew):
     """
-    Embed the moments qlm given up to order l, in a space of moments up to
-    order LNew >= l, assuming all higher order moments are zero. Typically,
-    this should not be done in order to preserve accuracy.
+    Embed or truncate the moments qlm given up to order LOld, in a space of
+    moments given up to order LNew >= 0, assuming all higher order moments are
+    zero. Typically, this should not be done in order to preserve accuracy.
     """
     LOld = np.shape(qlm)[0] - 1
-    if LNew < LOld:
-        print('New order for moments is smaller. Use truncate_qlm')
-        return 0
+    if LNew < 0:
+        print('Order cannot be negative')
+        qNew = 0
+    elif LNew < LOld:
+        qNew = np.zeros([LNew+1, 2*LNew+1], dtype='complex')
+        qNew[:] = qlm[:LNew+1, LOld-LNew:LOld+LNew+1]
     elif LNew == LOld:
-        return qlm
+        qNew = np.copy(qlm)
     else:
         qNew = np.zeros([LNew+1, 2*LNew+1], dtype='complex')
-        qNew[:LOld, LNew-LOld:LNew+LOld+1] = qlm
-        return qNew
+        qNew[:LOld+1, LNew-LOld:LNew+LOld+1] = qlm
+    return qNew
