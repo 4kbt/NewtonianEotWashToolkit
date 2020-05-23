@@ -5,4 +5,4 @@ from .glibShapes import *
 from .rotations import *
 from .qlm import *
 from .qlmACH import *
-from .multiForce import *
+from .multipoleLib import *

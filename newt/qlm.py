@@ -500,25 +500,23 @@ def ngon_prism(L, mass, H, a, phic, N):
 
 def tetrahedron(L, mass, x, y, z):
     """
-    The tetrahedron has a height H and extends above and below the
-    xy-plane by H/2.
+    This shape consists of a tetrahedron having three mutually perpendicular
+    triangular faces that meet at the origin. The fourth triangular face is
+    defined by points at corrdinates x, y, and z along the xhat, yhat, and zhat
+    axes respectively.
 
     Inputs
     ------
     L : int
-        Maximum order for multipole expansion
+        Maximum order of inner multipole moments. Only known to L=5.
     mass : float
-        Mass of the prism
-    H : float
-        Total height of the prism
-    d : float
-        X-position of first and second vertices
-    y1 : float
-        Y-position of first vertex
-    y2 : float
-        Y-position of second vertex
-    phic : float
-        Average angle of prism
+        Mass of the tetrahedron
+    x : float
+        Distance to vertex along x-axis
+    y : float
+        Distance to vertex along y-axis
+    z : float
+        Distance to vertex along z-axis
 
     Returns
     -------
