@@ -128,15 +128,13 @@ def test_cone():
 def test_tetrahedron():
     """
     Tests tetrahedron function against explicit forumulas.
-
-    XXX: Currently, does not pass for several L>2.
     """
     teta = qlmA.tetrahedron(5, 1, 2, 1, 3)
     tetb = qlm.tetrahedron(5, 1, 2, 1, 3)
     tetc = qlmA.tetrahedron(5, 1, 1, 2, 3)
     tetd = qlm.tetrahedron(5, 1, 1, 2, 3)
-    assert (abs(teta-tetb)[:3] < 100*np.finfo(float).eps).all()
-    assert (abs(tetc-tetd)[:3] < 100*np.finfo(float).eps).all()
+    assert (abs(teta-tetb) < 100*np.finfo(float).eps).all()
+    assert (abs(tetc-tetd) < 100*np.finfo(float).eps).all()
 
 
 def test_pyramid():

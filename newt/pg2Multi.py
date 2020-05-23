@@ -7,8 +7,6 @@ Created on Thu Sep 08 15:01:34 2016
 import numpy as np
 import scipy.special as sp
 
-BIG_G = 6.67428e-11
-
 
 def qmoment(l, m, massArray):
     """
@@ -181,7 +179,6 @@ def Qmomentsb(l, massArray):
         for m in range(n+1):
             Qlm = massArray[:, 0]*sp.sph_harm(m, n, phi, theta)/rl1
             Qlmsb[n, l+m] = np.sum(Qlm)
-            print(n, m)
             ctr += 1
 
     # Moments always satisfy Q(l, -m) = (-1)^m Q(l, m)*
@@ -238,79 +235,3 @@ def imoments(l, lmbd, massArray):
     ilms[:, l] /= 2
 
     return ilms
-
-
-def torque_lm(qlm, Qlm, L=None):
-    r"""
-    Returns all gravitational torque_lm moments up to l=10 computed from sensor
-    and source multipole moments. It assumes the sensor (interior) moments sit
-    in a rotating frame of a turntable so that
-
-    .. math::
-        \bar{q_{lm}} = q_{lm}e^{-im\phi_{TT}}
-    Then the torque is given by
-
-    .. math::
-        \tau = -4\pi i G \sum_{l=0}^{\infty}\frac{1}{2l+1}
-        \sum_{m=-l}^{l}m\ q_{lm}Q_{lm}e^{-im\phi_{TT}}
-
-    .. math::
-        = 4\pi i G \sum_{l=0}^{\infty}\frac{1}{2l+1}\sum_{m=0}^{l}m\
-        (q*_{lm}Q*_{lm}e^{im\phi_{TT}} - q_{lm}Q_{lm}e^{-im\phi_{TT}})
-
-    Since the indices l and m are identical, we may simply do an element-wise
-    multiplication and sum along rows.
-
-    Inputs
-    ------
-    qlm : ndarray
-        10x20 array of sensor (interior) lowest order multipole moments. The
-        data should be lower triangular, with l denoting row and m/2 denoting
-        real columns and m/2+1 denoting imaginary columns.
-    Qlm : ndarray
-        10x20 array of source (exterior) lowest order multipole moments. The
-        data should be lower triangular, with l denoting row and m/2 denoting
-        real columns and m/2+1 denoting imaginary columns.
-
-    Returns
-    -------
-    nlm : ndarray
-        10x20 array of torque multipole moments. The data should be lower
-        triangular, with l denoting row and m/2 denoting cosine(m*phi) columns
-        and m/2+1 denoting sine(m*phi) columns.
-    """
-    lqlm = len(qlm)
-    lQlm = len(Qlm)
-    minL = min([lqlm, lQlm])-1
-
-    ls = np.arange(minL+1)
-    lfac = 1/(2*ls+1)
-    ms = np.arange(-minL, minL+1)
-    nlm = 4*np.pi*BIG_G*1j*np.outer(lfac, ms)*qlm*Qlm
-
-    nm = np.sum(nlm, 0)
-    nc = nm[minL:] + nm[minL::-1]
-    ns = nm[minL:] - nm[minL::-1]
-
-    return nlm, nc, ns
-
-
-def embed_qlm(qlm, LNew):
-    """
-    Embed or truncate the moments qlm given up to order LOld, in a space of
-    moments given up to order LNew >= 0, assuming all higher order moments are
-    zero. Typically, this should not be done in order to preserve accuracy.
-    """
-    LOld = np.shape(qlm)[0] - 1
-    if LNew < 0:
-        print('Order cannot be negative')
-        qNew = 0
-    elif LNew < LOld:
-        qNew = np.zeros([LNew+1, 2*LNew+1], dtype='complex')
-        qNew[:] = qlm[:LNew+1, LOld-LNew:LOld+LNew+1]
-    elif LNew == LOld:
-        qNew = np.copy(qlm)
-    else:
-        qNew = np.zeros([LNew+1, 2*LNew+1], dtype='complex')
-        qNew[:LOld+1, LNew-LOld:LNew+LOld+1] = qlm
-    return qNew
