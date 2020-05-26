@@ -52,7 +52,7 @@ includes the implementation of a multipole analysis for the same calculations.
 It is well known that the gravitational potential can be decomposed into
 interactions of multipole moments allowing for accurate and fast calculations
 from only a relatively small number of low order moments. We can compute
-several low order moments of basic shapes or estimate the moments from a
+several low order moments of basic shapes ([ref][6], [ref][7]) or estimate the moments from a
 point-mass array. We can rotate these moments to large orders ([ref][4]) and 
 translate moments in several ways ([ref][2], [ref][3]). This allows us to
 compute the interactions in an entirely different and often useful perspective.
@@ -73,12 +73,14 @@ Adelberger.
 [3]: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.60.107501
 [4]: https://arxiv.org/abs/1403.7698
 [5]: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.95.124059
+[6]: https://iopscience.iop.org/article/10.1088/0264-9381/23/17/C02
+[7]: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.100.124053
 
 
 ### To Do
 - [X] Multipole rotations
 - [X] Multipole torques
-- [_] Multipole forces
+- [X] Multipole forces
 - [X] Multipole shapes
 - [X] Multipole shapes adelberger
 - [X] multipole shape comparisons
@@ -90,3 +92,4 @@ Adelberger.
 - [X] Pull request to Charlie's Octave version &#8594; Collaborator
 - [X] Outer Multipoles from point-mass
 - [X] Example visualization
+- [_] Example calculations
