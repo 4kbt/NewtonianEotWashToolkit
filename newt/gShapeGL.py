@@ -126,7 +126,7 @@ def annulus(mass, iR, oR, t, dd, dz):
     sx, wx = np.polynomial.legendre.leggauss(dd)
     sy, wy = np.polynomial.legendre.leggauss(dd)
     sz, wz = np.polynomial.legendre.leggauss(dd)
-    for k in range(dd):
+    for k in range(dz):
         for l in range(dd):
             for m in range(dd):
                 pointArray[k*dd*dd+l*dd+m, 1] = sx[m]*oR
@@ -171,7 +171,7 @@ def cone(mass, R, H, dd, dz):
     sx, wx = np.polynomial.legendre.leggauss(dd)
     sy, wy = np.polynomial.legendre.leggauss(dd)
     sz, wz = np.polynomial.legendre.leggauss(dd)
-    for k in range(dd):
+    for k in range(dz):
         for l in range(dd):
             for m in range(dd):
                 pointArray[k*dd*dd+l*dd+m, 1] = sx[m]*R
@@ -227,7 +227,7 @@ def wedge(mass, iR, oR, t, theta, dd, dz):
     sx, wx = np.polynomial.legendre.leggauss(dd)
     sy, wy = np.polynomial.legendre.leggauss(dd)
     sz, wz = np.polynomial.legendre.leggauss(dd)
-    for k in range(dd):
+    for k in range(dz):
         for l in range(dd):
             for m in range(dd):
                 x = sx[m]*dx + xa
