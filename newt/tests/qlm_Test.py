@@ -140,8 +140,6 @@ def test_tetrahedron():
 def test_pyramid():
     """
     Tests pyramid function four x,y symmetric right tetrahedrons.
-
-    XXX: Currently, does not pass for L>3.
     """
     tetb = qlm.tetrahedron(5, 1, np.sqrt(2), np.sqrt(2), 3)
     tetb = rot.rotate_qlm(tetb, -np.pi/4, 0, 0)
@@ -157,5 +155,7 @@ def test_pyramid():
     pyr3 = tet5 + tet6 + tet7 + tet8
     pyr2 = tetb + tet2 + tet3 + tet4
     pyr = qlmA.pyramid(5, 1, 3, 2, 2)
+    pyr4 = qlm.pyramid(5, 4, 1, 1, 3)
     assert (abs(pyr2-pyr)[:4] < 10*np.finfo(float).eps).all()
     assert (abs(pyr3-pyr)[:4] < 10*np.finfo(float).eps).all()
+    assert (abs(pyr4-pyr2) < 10*np.finfo(float).eps).all()

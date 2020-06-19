@@ -46,6 +46,10 @@ fig, ax = glb.display_points(m1, m2)
 ax.set_zlim([-20, 20])
 ```
 
+We have also implemented some shapes with grid-spacing and masses weighted
+according to a Gauss-Legendre quadrature. We retain the functionality of simple 
+translations and rotations while potentially improving convergence rates.
+
 
 However, the second portion of this package
 includes the implementation of a multipole analysis for the same calculations.
@@ -66,7 +70,10 @@ Adelberger.
 1. [Interaction potential between extended bodies][3]
 1. [Recursive computation of spherical harmonic rotation coefficients of large degree][4]
 1. [Multipole calculation of gravitational forces][5]
-
+1. [Analytic expressions for gravitational inner multipole moments of elementary solids and for the force between two rectangular solids][6]
+1. [Closed form expressions for gravitational multipole moments of elementary solids][7]
+1. [Comparison of the Efficiency of Translation Operators Used in the Fast Multipole Method for the 3D Laplace Equation][8]
+1. [Recursions for the computation of multipole translation and rotation coefficients for the 3-D Helmholtz equation][9]
 
 [1]: https://digital.lib.washington.edu/researchworks/handle/1773/34135
 [2]: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.55.7970
@@ -75,7 +82,8 @@ Adelberger.
 [5]: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.95.124059
 [6]: https://iopscience.iop.org/article/10.1088/0264-9381/23/17/C02
 [7]: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.100.124053
-
+[8]: https://drum.lib.umd.edu/handle/1903/3023
+[9]: http://users.umiacs.umd.edu/~ramani/pubs/GumerovDuraiswamiSISC03.pdf
 
 ### To Do
 - [X] Multipole rotations
@@ -85,6 +93,7 @@ Adelberger.
 - [X] Multipole shapes adelberger
 - [X] multipole shape comparisons
 - [X] Multipole translation
+- [_] Recursive translation matrices
 - [X] More tests
 - [_] Always more tests!
 - [_] pip package
