@@ -55,6 +55,10 @@ def sphere(mass, r, dd):
     """
     Creates point masses distributed in an spherical solid of mass m.
 
+    A single point-mass will suffice for the gravitational effect of any
+    spherical shell or sphere. This function is generally not needed for
+    calculations of Newtonian gravity. Use only when required.
+
     Inputs
     ------
     mass : float
