@@ -66,7 +66,7 @@ def sphere(mass, r, dd):
     z : float
         z-length of brick in m
     dd : float
-        number of Gauss-Legendre points distributed in box of side length 2*r
+        order of Gauss-Legendre polynomials distributed in box of side length 2*r
 
     Returns
     -------
@@ -78,16 +78,21 @@ def sphere(mass, r, dd):
     sx, wx = np.polynomial.legendre.leggauss(dd)
     sy, wy = np.polynomial.legendre.leggauss(dd)
     sz, wz = np.polynomial.legendre.leggauss(dd)
+
+    #Determining mass-normalization
+    density = mass / ( 4.0/3.0 * np.pi * r**3 )
+    massnorm = density * r**3 #(this is (2*r)**3/2**3 )
+
     for k in range(dd):
         for l in range(dd):
             for m in range(dd):
                 pointArray[k*dd*dd+l*dd+m, 1] = sx[m]*r
                 pointArray[k*dd*dd+l*dd+m, 2] = sy[l]*r
                 pointArray[k*dd*dd+l*dd+m, 3] = sz[k]*r
-                pointArray[k*dd*dd+l*dd+m, 0] = wx[m]*wy[l]*wz[k]
+                pointArray[k*dd*dd+l*dd+m, 0] = wx[m]*wy[l]*wz[k] * massnorm
 
     pointArray = np.array([pointArray[k] for k in range(dd**3) if
-                           np.sum(pointArray[k, 1:]**2) <= r])
+                           np.sum(pointArray[k, 1:]**2) <= r**2])
     # Total mass should check out as if integrating over points
     pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
     return pointArray
