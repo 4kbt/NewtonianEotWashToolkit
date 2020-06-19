@@ -558,6 +558,131 @@ def tetrahedron(L, mass, x, y, z):
     return qlm
 
 
+def tetrahedron2(L, mass, x, y1, y2, z):
+    """
+    This shape consists of a tetrahedron having three mutually perpendicular
+    triangular faces that meet at the origin. The fourth triangular face is
+    defined by points at corrdinates x, y, and z along the xhat, yhat, and zhat
+    axes respectively.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    mass : float
+        Mass of the tetrahedron
+    x : float
+        Distance to vertex along x-axis
+    y1 : float
+        Distance to vertex along y-axis
+    z : float
+        Distance to vertex along z-axis
+
+    Returns
+    -------
+    qlm : ndarray, complex
+        (L+1)x(2L+1) array of complex moment values
+    """
+    factor = 6*mass*np.sqrt(1/(4.*np.pi))
+    qlm = np.zeros([L+1, 2*L+1], dtype='complex')
+    if (x <= 0) or (y1 == y2) or (z <= 0):
+        return qlm
+
+    for l in range(L+1):
+        fac = factor*np.sqrt(2*l+1)/np.exp(sp.gammaln(l+4))/(y2-y1)
+        for m in range(l+1):
+            fac2 = fac*np.sqrt(np.exp(sp.gammaln(l+m+1)+sp.gammaln(l-m+1)))
+            for k in range((l-m)//2+1):
+                m2k = m+2*k
+                slk = (-1)**(m+k)*z**(l-m2k)/2**m2k
+                psum = 0
+                for p in range(m+k+1):
+                    ksum = 0
+                    for j in range(k+1):
+                        pj = p+j
+                        kfac = (1j)**pj*(-1)**p*(y2**(pj+1)-y1**(pj+1))*x**(m2k-pj)
+                        gampj = sp.gammaln(m2k+2)
+                        gampj -= sp.gammaln(j+1) + sp.gammaln(k-j+1)
+                        gampj -= sp.gammaln(p+1) + sp.gammaln(m+k-p+1)
+                        ksum += kfac*np.exp(gampj)/(pj+1)
+                    psum += ksum
+                slk *= psum
+                qlm[l, L+m] += slk
+            # Multiply by factor dependent only on (l,m)
+            qlm[l, L+m] *= fac2
+    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
+    ms = np.arange(-L, L+1)
+    mfac = (-1)**(np.abs(ms))
+    qlm += np.conj(np.fliplr(qlm))*mfac
+    qlm[:, L] /= 2
+    return qlm
+
+
+def pyramid(L, mass, x, y, z):
+    """
+    This shape consists of a pyramid having three mutually perpendicular
+    triangular faces that meet at the origin. The fourth triangular face is
+    defined by points at corrdinates x, y, and z along the xhat, yhat, and zhat
+    axes respectively.
+
+    Inputs
+    ------
+    L : int
+        Maximum order of inner multipole moments. Only known to L=5.
+    mass : float
+        Mass of the pyramid
+    x : float
+        Distance to vertex along x-axis
+    y1 : float
+        Distance to vertex along y-axis
+    z : float
+        Distance to vertex along z-axis
+
+    Returns
+    -------
+    qlm : ndarray, complex
+        (L+1)x(2L+1) array of complex moment values
+    """
+    factor = 3*mass*np.sqrt(1/(4.*np.pi))
+    qlm = np.zeros([L+1, 2*L+1], dtype='complex')
+    if (x <= 0) or (y <= 0) or (z <= 0):
+        return qlm
+
+    for l in range(L+1):
+        fac = factor*np.sqrt(2*l+1)/np.exp(sp.gammaln(l+4))
+        # m even
+        for m in range(0, l+1, 2):
+            fac2 = fac*np.sqrt(np.exp(sp.gammaln(l+m+1)+sp.gammaln(l-m+1)))
+            for k in range((l-m)//2+1):
+                m2k = m+2*k
+                slk = (-1)**(m+k)*z**(l-m2k)/2**m2k
+                psum = 0
+                for p in range(m+k+1):
+                    ksum = 0
+                    for j in range(k+1):
+                        pj = p+j
+                        # p+j must be even, but doesn't simplify well
+                        if (pj % 2) == 0:
+                            kfac = y**pj*x**(m2k-pj)
+                            kfac += (-1)**(m//2)*x**pj*y**(m2k-pj)
+                            kfac *= (1j)**pj*(-1)**p
+                            gampj = sp.gammaln(m2k+2)
+                            gampj -= sp.gammaln(j+1) + sp.gammaln(k-j+1)
+                            gampj -= sp.gammaln(p+1) + sp.gammaln(m+k-p+1)
+                            ksum += kfac*np.exp(gampj)/(pj+1)
+                    psum += ksum
+                slk *= psum
+                qlm[l, L+m] += slk
+            # Multiply by factor dependent only on (l,m)
+            qlm[l, L+m] *= fac2
+    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
+    ms = np.arange(-L, L+1)
+    mfac = (-1)**(np.abs(ms))
+    qlm += np.conj(np.fliplr(qlm))*mfac
+    qlm[:, L] /= 2
+    return qlm
+
+
 def cyl_mom(L, M, dens, H, R):
     gamFac = np.sqrt(np.exp(sp.gammaln(L-M+1)-sp.gammaln(L+M+1)))
     fact = np.sqrt((2*L+1)/(4*np.pi))*gamFac*sp.factorial(L-M)/(2.*np.pi)
