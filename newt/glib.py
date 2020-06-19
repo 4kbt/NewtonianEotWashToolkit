@@ -221,7 +221,7 @@ def rotate_point_array(pointMass, theta, rotVec):
     return rotArray
 
 
-def display_points(pm1, pm2):
+def display_points(pm1, pm2, scale_mass=False):
     """
     Creates a 3-dimensional plot of the two point-mass arrays pm1 and pm2.
 
@@ -231,6 +231,8 @@ def display_points(pm1, pm2):
         N1x4 array of first set of point masses [m, x, y, z]
     pm2 : ndarray
         N2x4 array of second set of point masses [m, x, y, z]
+    scale_mass : bool
+        Determines whether points are scaled based on their masses. Useful for legendre-gauss spacing.
 
     Returns
     -------
@@ -241,8 +243,15 @@ def display_points(pm1, pm2):
     """
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.scatter(pm1[:, 1], pm1[:, 2], pm1[:, 3], label='mass1', s=50, alpha=.5)
-    ax.scatter(pm2[:, 1], pm2[:, 2], pm2[:, 3], label='mass2', s=50,
+    s1 = 50
+    s2 = 50
+    if scale_mass:
+        pts1 = len(pm1)
+        pts2 = len(pm2)
+        s1 = 100*pts1*pm1[:,0]
+        s2 = 100*pts1*pm2[:,0]
+    ax.scatter(pm1[:, 1], pm1[:, 2], pm1[:, 3], label='mass1', s=s1, alpha=.5)
+    ax.scatter(pm2[:, 1], pm2[:, 2], pm2[:, 3], label='mass2', s=s2,
                marker='s', alpha=.5)
     ax.legend()
     return fig, ax
