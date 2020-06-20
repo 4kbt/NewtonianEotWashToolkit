@@ -64,7 +64,7 @@ This portion is based largely on the private program, MULTIN, of Prof.
 Adelberger.
 
 ## References
-1. [https://github.com/4kbt/PointGravity][9]
+1. [https://github.com/4kbt/PointGravity][10]
 1. [A Sub-Millimeter Parallel-Plate Test of Gravity][1]
 1. [Translation of multipoles for a 1/r potential][2]
 1. [Interaction potential between extended bodies][3]
@@ -84,6 +84,7 @@ Adelberger.
 [7]: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.100.124053
 [8]: https://drum.lib.umd.edu/handle/1903/3023
 [9]: http://users.umiacs.umd.edu/~ramani/pubs/GumerovDuraiswamiSISC03.pdf
+[10]: https://github.com/4kbt/PointGravity
 
 ## Installation
 Clone or download this repository from [here][9], and navigate to the directory
