@@ -87,7 +87,7 @@ Adelberger.
 [10]: https://github.com/4kbt/PointGravity
 
 ## Installation
-Clone or download this repository from [here][9], and navigate to the directory
+Clone or download this repository from [here][10], and navigate to the directory
 containing the setup.py file. Then simply install using pip.
 
 ```python
