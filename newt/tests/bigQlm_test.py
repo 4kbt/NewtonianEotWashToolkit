@@ -38,3 +38,8 @@ def test_bAnnulus():
     mmout5 = pgm.Qmomentsb(5, glb.translate_point_array(mout5, [0, 0, .5]))
     Qlmb5 = bqlm.annulus(5, 5/(np.pi*(2**2-1)), 1, 1, 2, 0, np.pi/5)
     assert (abs(Qlmb5-mmout5) < .002).all()
+    # Test that a L<5 works (we'll do 3)
+    Qlmb3 = bqlm.annulus(3, 3/(np.pi*(2**2-1)), 1, 1, 2, 0, np.pi/3)
+    mmout3 = pgm.Qmomentsb(3, glb.translate_point_array(mout3, [0, 0, .5]))
+    assert (np.shape(Qlmb3) == (4, 7))
+    assert (abs(Qlmb3-mmout3) < .002).all()

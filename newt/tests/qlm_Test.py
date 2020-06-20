@@ -48,6 +48,9 @@ def test_annulus2():
     rho = 8/(np.pi*(3**2-2**2))
     qcyl2 = qlmA.annulus(5, rho, 1, 2, 3, np.pi/3, np.pi/8)
     assert (abs(qcyl-qcyl2) < 90*np.finfo(float).eps).all()
+    # Test explicit formula for L<5 (we'll do L=3)
+    qcyl2 = qlmA.annulus(3, rho, 1, 2, 3, np.pi/3, np.pi/8)
+    assert (np.shape(qcyl2) == (4, 7))
 
 
 def test_tri_prism():
@@ -69,6 +72,9 @@ def test_tri_prism2():
     trip = qlm.tri_prism(5, 1, 1, 2, 1.7, 3)
     trip2 = qlmA.tri_prism(5, 1/(1.3), 1, 2, 1.7, 3)
     assert (abs(trip-trip2) < 200*np.finfo(float).eps).all()
+    # Test explicit formula for L<5 (we'll do L=3)
+    trip2 = qlmA.tri_prism(3, 1/(1.3), 1, 2, 1.7, 3)
+    assert (np.shape(trip2) == (4, 7))
 
 
 def test_rect_prism():
@@ -94,6 +100,9 @@ def test_rect_prism():
     assert (abs(rect-rect2) < 400*np.finfo(float).eps).all()
     assert (abs(rect-rect3) < 5e3*np.finfo(float).eps).all()
     assert (abs(rect-rect4) < 5e3*np.finfo(float).eps).all()
+    # Test explicit formula for L<5 (we'll do L=3)
+    rect2 = qlmA.rect_prism(3, 1/15, 1, 15, 1)
+    assert (np.shape(rect2) == (4, 7))
 
 
 def test_ngon():
@@ -123,6 +132,9 @@ def test_cone():
     con3 = trs.translate_qlm(con, [0, 0, -.5])
     con2 = qlmA.cone(5, 3/np.pi, 1, 0, 1)
     assert (abs(con3-con2) < 10*np.finfo(float).eps).all()
+    # Test explicit formula for L<5 (we'll do L=3)
+    con2 = qlmA.cone(3, 3/np.pi, 1, 0, 1)
+    assert (np.shape(con2) == (4, 7))
 
 
 def test_tetrahedron():
@@ -135,6 +147,9 @@ def test_tetrahedron():
     tetd = qlm.tetrahedron(5, 1, 1, 2, 3)
     assert (abs(teta-tetb) < 100*np.finfo(float).eps).all()
     assert (abs(tetc-tetd) < 100*np.finfo(float).eps).all()
+    # Test explicit formula for L<5 (we'll do L=3)
+    tetd = qlm.tetrahedron(3, 1, 1, 2, 3)
+    assert (np.shape(tetd) == (4, 7))
 
 
 def test_pyramid():
@@ -159,3 +174,6 @@ def test_pyramid():
     assert (abs(pyr2-pyr)[:4] < 10*np.finfo(float).eps).all()
     assert (abs(pyr3-pyr)[:4] < 10*np.finfo(float).eps).all()
     assert (abs(pyr4-pyr2) < 10*np.finfo(float).eps).all()
+    # Test explicit formula for L<5 (we'll do L=3)
+    pyr = qlmA.pyramid(3, 1, 3, 2, 2)
+    assert (np.shape(pyr) == (4, 7))
