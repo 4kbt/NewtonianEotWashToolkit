@@ -8,16 +8,16 @@ import numpy as np
 import scipy.special as sp
 
 
-def rect_prism(L, rho, x, y, z):
+def rect_prism(LMax, rho, x, y, z):
     """
     Inner multipoles of a rectangular box centered on the origin and specified
     by positive quantities x, y, and z - its dimensions along xhat, yhat, and
-    zhat. Values are only known up to L=5. The density is given by rho.
+    zhat. Values are only known up to LMax=5. The density is given by rho.
 
     Inputs
     ------
-    L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
     rho : float
         Density in kg/m^3
     x : float
@@ -30,8 +30,12 @@ def rect_prism(L, rho, x, y, z):
     Returns
     -------
     qlm : ndarray
-        (L+1)x(2L+1) complex array of inner moments
+        (LMax+1)x(2LMax+1) complex array of inner moments
     """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (z <= 0):
         return qlm
@@ -50,19 +54,23 @@ def rect_prism(L, rho, x, y, z):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
     return qlm
 
 
-def annulus(L, rho, H, Ri, Ro, phic, phih):
+def annulus(LMax, rho, H, Ri, Ro, phic, phih):
     """
     Cylindrical annulus with axis of symmetry along zhat and symmetric about
     the xy-plane. Phic and phih are defined to match qlm.annulus inputs. Values
-    are only known up to L=5. The density is given by rho.
+    are only known up to LMax=5. The density is given by rho.
 
     Inputs
     ------
-    L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
     rho : float
         Density in kg/m^3
     H : float
@@ -80,8 +88,12 @@ def annulus(L, rho, H, Ri, Ro, phic, phih):
     Returns
     -------
     qlm : ndarray
-        (L+1)x(2L+1) complex array of inner moments
+        (LMax+1)x(2LMax+1) complex array of inner moments
     """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
     phih = phih % (2*np.pi)
     dphi = phih*2
     dr = Ro-Ri
@@ -128,20 +140,24 @@ def annulus(L, rho, H, Ri, Ro, phic, phih):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
     return qlm
 
 
-def cone(L, rho, h, r1, r2):
+def cone(LMax, rho, h, r1, r2):
     """
     The (truncated) cone is symmetric about zhat, and is specified by upper and
     lower radii, r1 and r2, and height h>0. The cone extends a distance h/2
     above and below the xy-plane. Complete cones have vanishing values of r1 or
-    r2. Moments given out to L=5.
+    r2. Moments given out to LMax=5.
 
     Inputs
     ------
-    L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
     rho : float
         Density in kg/m^3
     h : float
@@ -154,8 +170,12 @@ def cone(L, rho, h, r1, r2):
     Returns
     -------
     qlm : ndarray
-        (L+1)x(2L+1) complex array of inner moments
+        (LMax+1)x(2LMax+1) complex array of inner moments
     """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (h <= 0):
         return qlm
@@ -199,20 +219,24 @@ def cone(L, rho, h, r1, r2):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
     return qlm
 
 
-def tri_prism(L, rho, h, d, y1, y2):
+def tri_prism(LMax, rho, h, d, y1, y2):
     """
     The shape has reflection symmetry about xy-plane and thickness h>0. The
     triangular faces have vertices at (x,y)=(0,0), (d,y1), and (d,y2). The
     restriction that one side be parallel to yhat is easily overcome using the
-    rotational properties of the moments. Moments out to L=5.
+    rotational properties of the moments. Moments out to LMax=5.
 
     Inputs
     ------
-    L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
     rho : float
         Density in kg/m^3
     h : float
@@ -227,8 +251,12 @@ def tri_prism(L, rho, h, d, y1, y2):
     Returns
     -------
     qlm : ndarray
-        (L+1)x(2L+1) complex array of inner moments
+        (LMax+1)x(2LMax+1) complex array of inner moments
     """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (h <= 0):
         return qlm
@@ -276,21 +304,25 @@ def tri_prism(L, rho, h, d, y1, y2):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
     return qlm
 
 
-def tetrahedron(L, rho, x, y, z):
+def tetrahedron(LMax, rho, x, y, z):
     """
     This shape consists of a tetrahedron having three mutually perpendicular
     triangular faces that meet at the origin. The fourth triangular face is
     defined by points at corrdinates x, y, and z along the xhat, yhat, and zhat
-    axes respectively. Values are only known up to L=5. The density is given by
-    rho.
+    axes respectively. Values are only known up to LMax=5. The density is given
+    by rho.
 
     Inputs
     ------
-    L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
     rho : float
         Density in kg/m^3
     x : float
@@ -303,8 +335,12 @@ def tetrahedron(L, rho, x, y, z):
     Returns
     -------
     qlm : ndarray
-        (L+1)x(2L+1) complex array of inner moments
+        (LMax+1)x(2LMax+1) complex array of inner moments
     """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (z <= 0):
         return qlm
@@ -349,20 +385,24 @@ def tetrahedron(L, rho, x, y, z):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
     return qlm
 
 
-def cylhole(L, rho, r, R):
+def cylhole(LMax, rho, r, R):
     """
     The shape consists of the volume that would be removed by drilling a hole
     of radius r into a cylinder of radius R. The symmetry axis of the hole is
     along zhat, and the cylinder has its symmetry axis along yhat. The moments
-    requre the hypergeometric function 2F1(a, b; c; x). Moments out to L=5.
+    requre the hypergeometric function 2F1(a, b; c; x). Moments out to LMax=5.
 
     Inputs
     ------
-    L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
     rho : float
         Density in kg/m^3
     r : float
@@ -373,8 +413,12 @@ def cylhole(L, rho, r, R):
     Returns
     -------
     qlm : ndarray
-        (L+1)x(2L+1) complex array of inner moments
+        (LMax+1)x(2LMax+1) complex array of inner moments
     """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (r <= 0) or (R < r):
         return qlm
@@ -398,21 +442,26 @@ def cylhole(L, rho, r, R):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
     return qlm
 
 
-def platehole(L, rho, t, r, theta):
+def platehole(LMax, rho, t, r, theta):
     """
     This shape consists of the volume that would be removed by drilling a hole
     of radius r through a parallel-sided plate of thickness t. The plate is
     centered on the xy-plane. The hole axis, which passes through the origin,
     lies in the xz-plane at an angle theta measured from zhat, where -pi/2 <
-    theta < pi/2. Values are only known up to L=5. The density is given by rho.
+    theta < pi/2. Values are only known up to LMax=5. The density is given by
+    rho.
 
     Inputs
     ------
-    L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
     rho : float
         Density in kg/m^3
     t : float
@@ -425,8 +474,12 @@ def platehole(L, rho, t, r, theta):
     Returns
     -------
     qlm : ndarray
-        (L+1)x(2L+1) complex array of inner moments
+        (LMax+1)x(2LMax+1) complex array of inner moments
     """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (r <= 0) or (t <= 0) or (abs(theta) > np.pi/2):
         return qlm
@@ -451,20 +504,24 @@ def platehole(L, rho, t, r, theta):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
     return qlm
 
 
-def pyramid(L, rho, h, x, y):
+def pyramid(LMax, rho, h, x, y):
     """
     This shape consists of a symmetric pyramid whose base with side lengths x
     and y lies in the xy-plane centered about the origin, and whose apex is at
-    (x,y,z) = (0,0,h). Values are only known up to L=5. The density is given by
-    rho.
+    (x,y,z) = (0,0,h). Values are only known up to LMax=5. The density is given
+    by rho.
 
     Inputs
     ------
-    L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
     rho : float
         Density in kg/m^3
     h : float
@@ -477,8 +534,12 @@ def pyramid(L, rho, h, x, y):
     Returns
     -------
     qlm : ndarray
-        (L+1)x(2L+1) complex array of inner moments
+        (LMax+1)x(2LMax+1) complex array of inner moments
     """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (h <= 0):
         return qlm
@@ -507,4 +568,8 @@ def pyramid(L, rho, h, x, y):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
     return qlm

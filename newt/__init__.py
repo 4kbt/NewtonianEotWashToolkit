@@ -6,4 +6,5 @@ from .gShapeGL import *
 from .rotations import *
 from .qlm import *
 from .qlmACH import *
+from .bigQlm import *
 from .multipoleLib import *
