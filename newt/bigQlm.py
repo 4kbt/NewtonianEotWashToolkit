@@ -7,14 +7,45 @@ Created on Mon May  4 14:11:54 2020
 import numpy as np
 
 
-def annulus(L, dens, H, r0, r1, phic, phih):
+def annulus(LMax, dens, H, r0, r1, phic, phih):
     """
-    Calculates the first four outer moments of an annulus centered on the
-    origin. Explicity calculated with Mathematica.
+    Calculates the first five outer moments of an annulus explicity calculated
+    with Mathematica. The annular section has an axis of symmetry along zhat
+    and extends vertically above the xy-plane by height H. Phic and phih are
+    defined to match qlm.annulus inputs as the average angle it faces and the
+    half-subtended angle. Values are only known up to LMax=5. The density is
+    given by rho. Both the inner and outer radii (r0, r1) must be positive.
+
+    Inputs
+    ------
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
+    rho : float
+        Density in kg/m^3
+    H : float
+        Total height along z axis. Centered about z=0.
+    Ri : float
+        Inner radius of annulus
+    Ro : float
+        Outer radius of annulus
+    phic : float
+        Central angle of annular section
+    phih : float
+        Half angular width of annular section
+
+
+    Returns
+    -------
+    qlm : ndarray
+        (LMax+1)x(2LMax+1) complex array of inner moments
     """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
     Qlmb = np.zeros([L+1, 2*L+1], dtype='complex')
     phih = phih % (2*np.pi)
-    if (H == 0) or (r1 < r0) or (phih == 0) or (phih > np.pi):
+    if (H == 0) or (r1 < r0) or (r1 < 0) or (r0 < 0) or (phih == 0) or (phih > np.pi):
         return Qlmb
     d1 = np.sqrt(H**2 + r1**2)
     d0 = np.sqrt(H**2 + r0**2)
@@ -76,4 +107,8 @@ def annulus(L, dens, H, r0, r1, phic, phih):
     mfac = (-1)**(np.abs(ms))
     Qlmb += np.conj(np.fliplr(Qlmb))*mfac
     Qlmb[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        Qlmb = Qlmb[:LMax+1, L-LMax:L+LMax+1]
     return Qlmb

@@ -12,12 +12,16 @@ import scipy.special as sp
 def rotate_H_recurs(p, beta, Hn_prev=None):
     """
     Rotates the wigner-like coefficients with recursive algorithm developed by
-    Gumerov and Duraiswami.
+    Gumerov and Duraiswami. This recursive method is only valid for beta in
+    [0, pi]
 
     Inputs
     ------
-     : int
+    p : int
         Order of multipole expansion to output rotation matrix coefficient H
+    beta : float
+        Angle in radians about the y-axis as given by Euler angles in z-y-z
+        convention. This angle must be between [0, pi].
 
     Reference
     ---------
@@ -174,7 +178,29 @@ def epsm(ms):
 def dlmn(LMax, beta):
     """
     Compute all wigner small d matrices of angle beta for all orders up to
-    LMax, using the recursive method.
+    LMax, using the recursive method. This function uses the symmetry
+    properties of the H-matrices generated in the recursive calculations to
+    handle any angle, beta.
+
+    Inputs
+    ------
+    LMax : int
+        Maximum order of rotation matrices
+    beta : float
+        Angle in radians about the y-axis as given by Euler angles in z-y-z
+        convention.
+
+    Returns
+    -------
+    ds : list
+        List of L = [0, LMax] (2L+1)x(2L+1) small-d wigner rotation matrices
+
+    Reference
+    ---------
+    "Recursive Computation of Spherical Harmonic Rotation Coefficients of Large
+    Degree" N. Gumerov, R. Duraiswami
+
+    https://arxiv.org/pdf/1403.7698v1.pdf
     """
     beta = beta % (2*np.pi)
     ms = np.arange(-LMax, LMax+1)
@@ -195,6 +221,32 @@ def dlmn(LMax, beta):
 
 def wignerDl(LMax, alpha, beta, gamma):
     """
+    Compute all wigner rotation matrices for all orders up to LMax, using the
+    recursive calculations given by Gumerov & Duraiswami. The rotation angles
+    are given as Euler angles, z-y-z.
+
+    Inputs
+    ------
+    LMax : int
+        Maximum order of rotation matrices
+    alpha : float
+        Angle in radians about z-axis
+    beta : float
+        Angle in radians about y-axis
+    gamma : float
+        Angle in radians about z-axis
+
+    Returns
+    -------
+    ds : list
+        List of L = [0, LMax] (2L+1)x(2L+1) wigner rotation matrices
+
+    Reference
+    ---------
+    "Recursive Computation of Spherical Harmonic Rotation Coefficients of Large
+    Degree" N. Gumerov, R. Duraiswami
+
+    https://arxiv.org/pdf/1403.7698v1.pdf
     """
     beta = beta % (2*np.pi)
     ms = np.arange(-LMax, LMax+1)
@@ -218,9 +270,32 @@ def wignerDl(LMax, alpha, beta, gamma):
 
 
 def rotate_qlm(qlm, alpha, beta, gamma):
+    """
+    Applies an arbitrary rotation given as Euler angles in z-y-z convention to
+    a set of multipole moments of finite L. The rotations matrices are
+    generated using a recursive algorithm from Gumerov and Duraiswami and
+    applied at each order.
+
+    Inputs
+    ------
+    qlm : ndarray, complex
+        (L+1)x(2L+1) complex array of multipole coefficients
+    alpha : float
+        Angle in radians about z-axis
+    beta : float
+        Angle in radians about y-axis
+    gamma : float
+        Angle in radians about z-axis
+
+    Returns
+    -------
+    qNew : ndarray, complex
+        (L+1)x(2L+1) complex array of rotated multipole coefficients
+    """
     LMax = np.shape(qlm)[0] - 1
     qNew = np.copy(qlm)
-    # XXX Should test to make sure really need to go to LMax + 1
+    # XXX Should test to make sure really need to go to LMax+1 since H
+    # recursion already dropping last entry
     ds = wignerDl(LMax+1, alpha, beta, gamma)
     for k in range(1, LMax+1):
         qNew[k, LMax-k:LMax+k+1] = np.dot(ds[k], qlm[k, LMax-k:LMax+k+1])
@@ -229,7 +304,32 @@ def rotate_qlm(qlm, alpha, beta, gamma):
 
 def Dlmn(l, m, n, alpha, beta, gamma):
     """
-    Compute the (m, n) term of the Wigner D matrix, D^l_{m,n}.
+    Compute the (m, n) term of the Wigner D matrix, D^l_{m,n} using an explicit
+    formula.
+
+    Inputs
+    ------
+    l : int
+        Order of rotation matrix
+    m : int
+        New index within order of multipole coefficient
+    n : int
+        Old index within order of multipole coefficient
+    alpha : float
+        Angle in radians about z-axis
+    beta : float
+        Angle in radians about y-axis
+    gamma : float
+        Angle in radians about z-axis
+
+    Returns
+    -------
+    Dlmn : float
+        (m, n) entry in Wigner rotation matrix of order l
+
+    References
+    ----------
+    https://en.wikipedia.org/wiki/Wigner_D-matrix
     """
     Dlmn = 0
     kmin = max([m-n, 0])
@@ -244,24 +344,37 @@ def Dlmn(l, m, n, alpha, beta, gamma):
 
 
 def Dl(l, alpha, beta, gamma):
-    """Compute the mxm Wigner D matrix."""
+    """
+    Compute the (2l+1)x(2l+1) Wigner D matrix using an explicit formula for
+    each entry.
+
+    Inputs
+    ------
+    l : int
+        Order of rotation matrix
+    m : int
+        New index within order of multipole coefficient
+    n : int
+        Old index within order of multipole coefficient
+    alpha : float
+        Angle in radians about z-axis
+    beta : float
+        Angle in radians about y-axis
+    gamma : float
+        Angle in radians about z-axis
+
+    Returns
+    -------
+    Dl : float
+        (2l+1)x(2l+1) Wigner rotation matrix of order l
+
+    References
+    ----------
+    https://en.wikipedia.org/wiki/Wigner_D-matrix
+    """
     Nm = 2*l+1
     Dl = np.zeros([Nm, Nm], dtype=complex)
     for m in range(Nm):
         for n in range(Nm):
             Dl[m, n] = Dlmn(l, -l + m, -l + n, alpha, beta, gamma)
     return Dl
-
-
-# Example script
-# Recursive rotation matrix calculation
-beta = np.pi/4
-Hs = rotate_H_recurs(100, beta)
-epsmmp = epsm(-np.arange(-40, 41))  # sign factor #1
-epsmm = epsm(np.arange(-40, 41))    # sign factor #2
-# Classic calcultion
-H40 = Dl(40, 0, beta, 0)  # transposed relative to Hs
-
-fig, ax = plt.subplots(1, 2, sharey=True)
-ax[0].imshow(np.outer(epsmm, epsmmp)*Hs[40])
-ax[1].imshow(np.real(H40.T))
