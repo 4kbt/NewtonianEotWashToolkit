@@ -104,10 +104,10 @@ pip install .
 - [X] Multipole translation
 - [_] Recursive translation matrices
 - [X] More tests
-- [_] Always more tests!
-- [_] pip package
-- [_] More Doc Strings
+- [ ] Always more tests!
+- [ ] pip package
+- [ ] More Doc Strings
 - [X] Pull request to Charlie's Octave version &#8594; Collaborator
 - [X] Outer Multipoles from point-mass
 - [X] Example visualization
-- [_] Example calculations
+- [X] Example calculations

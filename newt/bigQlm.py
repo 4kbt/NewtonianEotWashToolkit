@@ -5,6 +5,55 @@ Created on Mon May  4 14:11:54 2020
 @author: John Greendeer Lee
 """
 import numpy as np
+import scipy.special as sp
+
+
+def sphere(LMax, dens, R, x, y, z):
+    """
+    A sphere behaves identically to a point mass. Given the density and radius,
+    we can get the mass of our point and evaluate the outer moments at the
+    given location at (x, y, z).
+
+    Inputs
+    ------
+    LMax : int
+        Maximum order of inner multipole moments.
+    rho : float
+        Density in kg/m^3
+    R : float
+        Radius of sphere
+    x : float
+        x-position of sphere
+    y : float
+        y-position of sphere
+    z : float
+        z-position of sphere
+
+    Returns
+    -------
+    Qlmb : ndarray
+        (LMax+1)x(2LMax+1) complex array of outer moments
+    """
+    M = dens*(4*np.pi*R**3)/3
+    Qlmsb = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
+    d = np.sqrt(x**2 + y**2 + z**2)
+    if (d == 0):
+        print('Outer multipole moments cannot be evaluated at the origin.')
+        return Qlmsb
+    theta = np.arccos(z/d)
+    phi = np.arctan2(y, x) % (2*np.pi)
+    for n in range(LMax+1):
+        rl1 = d**(n+1)
+        for m in range(n+1):
+            Qlm = M*sp.sph_harm(m, n, phi, theta)/rl1
+            Qlmsb[n, LMax+m] = Qlm
+
+    # Moments always satisfy Q(l, -m) = (-1)^m Q(l, m)*
+    ms = np.arange(-LMax, LMax+1)
+    fac = (-1)**(np.abs(ms))
+    Qlmsb += np.conj(np.fliplr(Qlmsb))*fac
+    Qlmsb[:, LMax] /= 2
+    return Qlmsb
 
 
 def annulus(LMax, dens, H, r0, r1, phic, phih):
@@ -36,8 +85,8 @@ def annulus(LMax, dens, H, r0, r1, phic, phih):
 
     Returns
     -------
-    qlm : ndarray
-        (LMax+1)x(2LMax+1) complex array of inner moments
+    Qlmb : ndarray
+        (LMax+1)x(2LMax+1) complex array of outer moments
     """
     if LMax < 5:
         L = 5
