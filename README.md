@@ -63,7 +63,7 @@ compute the interactions in an entirely different and often useful perspective.
 This portion is based largely on the private program, MULTIN, of Prof.
 Adelberger.
 
-Example calculations are explained [here][/newt/example/exampleMulti.md]
+Example calculations are explained [here][newt/example/exampleMulti.md]
 
 ## References
 1. [https://github.com/4kbt/PointGravity][10]
