@@ -2,7 +2,7 @@
 """
 Created on Fri Jun 26 10:09:45 2020
 
-@author: John
+@author: John Greendeer Lee
 """
 
 import numpy as np
@@ -37,7 +37,7 @@ def cyl_integrand_Qlmb(z, r, theta, l, m):
     """
     gfac = np.exp(sp.gammaln(l+m+1) + sp.gammaln(l-m+1))
     fac = (-1)**m*np.sqrt((2*l+1)*gfac/(4*np.pi))*np.exp(1j*m*theta)
-    fac /= (r**2 + z**2)**(2*l+1)
+    fac /= (r**2 + z**2)**((2*l+1)/2)
     shi = 0
     for k in range((l-m)//2+1):
         m2k = m+2*k
@@ -168,7 +168,7 @@ def annulus(L, dens, h1, h2, IR, OR, phih):
     return Qlmb
 
 
-def cone(L, dens, H, IR, OR, phih):
+def outer_cone(L, dens, H, IR, OR, phih):
     """
     Numerically integrates for the outer moments of a section of a cone using
     tplquad. The cone section has an axis of symmetry along zhat, extending

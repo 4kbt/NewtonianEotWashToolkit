@@ -72,7 +72,7 @@ def annulus(LMax, dens, H, r0, r1, phic, phih):
     rho : float
         Density in kg/m^3
     H : float
-        Total height along z axis. Centered about z=0.
+        Total height along z axis above the xy-plane if H>0.
     Ri : float
         Inner radius of annulus
     Ro : float
