@@ -97,6 +97,42 @@ def test_wedge():
     assert (np.average(wedge2[:, 2]) < 10*np.finfo(float).eps).all()
 
 
+def test_trap():
+    """
+    Check that center of mass for a annular section centered about y and z,
+    whether we have an even or odd number of grid points in y or z.
+
+    Tests
+    -----
+    trapezoid : function
+    """
+    pEven = 16
+    pOdd = 15
+    trapezoid = gshp.trapezoid(1, 1, 2, 1, np.pi/6, pEven, pEven)
+    trapezoid2 = gshp.trapezoid(1, 1, 2, 1, np.pi/6, pOdd, pOdd)
+    assert (np.average(trapezoid[:, 3]) < 10*np.finfo(float).eps).all()
+    assert (np.average(trapezoid2[:, 3]) < 10*np.finfo(float).eps).all()
+    assert (np.average(trapezoid[:, 2]) < 10*np.finfo(float).eps).all()
+    assert (np.average(trapezoid2[:, 2]) < 10*np.finfo(float).eps).all()
+
+
+def test_outer_cone():
+    """
+    Check that center of mass for a annular cone section is centered about y,
+    whether we have an even or odd number of grid points in y or z.
+
+    Tests
+    -----
+    outer_cone : function
+    """
+    pEven = 16
+    pOdd = 15
+    outCone = gshp.outer_cone(1, 1, 2, 1, np.pi/5, pEven, pEven)
+    outCone2 = gshp.outer_cone(1, 1, 2, 1, np.pi/5, pOdd, pOdd)
+    assert (np.average(outCone[:, 2]) < 10*np.finfo(float).eps).all()
+    assert (np.average(outCone2[:, 2]) < 10*np.finfo(float).eps).all()
+
+
 def test_shell():
     """
     Check that the radius and mass and quadrupole check out.

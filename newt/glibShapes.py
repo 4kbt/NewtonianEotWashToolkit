@@ -118,7 +118,7 @@ def annulus(mass, iR, oR, t, nx, nz):
         point mass array of format [m, x, y, z]
     """
     zgrid = t/float(nz-1)
-    xgrid = oR*2./float(nx)
+    xgrid = oR*2./float(nx-1)
     ygrid = xgrid
 
     density = mass/(np.pi*(oR**2-iR**2)*t)
@@ -129,9 +129,9 @@ def annulus(mass, iR, oR, t, nx, nz):
     for k in range(nz):
         for l in range(nx):
             for m in range(nx):
-                pointArray[k*nx*nx+l*nx+m, 1] = m*2*oR/float(nx)-oR
-                pointArray[k*nx*nx+l*nx+m, 2] = l*2*oR/float(nx)-oR
-                pointArray[k*nx*nx+l*nx+m, 3] = k*t/float(nz-1)-t/2.
+                pointArray[k*nx*nx+l*nx+m, 1] = m*xgrid-oR
+                pointArray[k*nx*nx+l*nx+m, 2] = l*ygrid-oR
+                pointArray[k*nx*nx+l*nx+m, 3] = k*zgrid-t/2.
 
     pointArray = np.array([pointArray[k] for k in range(nx*nx*nz) if
                            pointArray[k, 1]**2+pointArray[k, 2]**2 >= iR**2 and
@@ -165,8 +165,10 @@ def cone(mass, R, H, nx, nz):
     pointArray : ndarray
         point mass array of format [m, x, y, z]
     """
-    zgrid = H/float(nz)
-    xgrid = R*2./float(nx)
+    zgrid = H/(nz-1)
+    # not sure why this works better as 2*R/nx
+    # annulus suggests should be 2*R/(nx-1) but test_cone fails
+    xgrid = R*2./nx
     ygrid = xgrid
 
     density = mass/(np.pi*H*(R**2)/3.)
@@ -178,9 +180,9 @@ def cone(mass, R, H, nx, nz):
     for k in range(nz):
         for l in range(nx):
             for m in range(nx):
-                pointArray[k*nx*nx+l*nx+m, 1] = m*2*R/float(nx)-R
-                pointArray[k*nx*nx+l*nx+m, 2] = l*2*R/float(nx)-R
-                pointArray[k*nx*nx+l*nx+m, 3] = k*H/float(nz-1)
+                pointArray[k*nx*nx+l*nx+m, 1] = m*xgrid-R
+                pointArray[k*nx*nx+l*nx+m, 2] = l*ygrid-R
+                pointArray[k*nx*nx+l*nx+m, 3] = k*zgrid
 
     pointArray = np.array([pointArray[k] for k in range(nx*nx*nz) if
                            pointArray[k, 1]**2+pointArray[k, 2]**2 <=
@@ -234,7 +236,7 @@ def spherical_random_shell(mass, r, N):
     return pointArray
 
 
-def wedge(mass, iR, oR, t, theta, nx, nz):
+def wedge(mass, iR, oR, t, beta, nx, nz):
     """
     Creates point masses distributed in an annulus of mass m.
 
@@ -248,6 +250,8 @@ def wedge(mass, iR, oR, t, theta, nx, nz):
         outer radius of annulus in m
     t : float
         thickness of annulus in m
+    beta : float
+        half of the subtended angle in radians
     nx : float
         number of points distributed in x,y
     nz : float
@@ -258,9 +262,16 @@ def wedge(mass, iR, oR, t, theta, nx, nz):
     pointArray : ndarray
         point mass array of format [m, x, y, z]
     """
-    zgrid = t/nz
-    xgrid = oR*2./float(nx)
-    ygrid = xgrid
+    xmax = oR
+    if beta < np.pi/2:
+        xmin = np.cos(beta)*iR
+        ymax = np.sin(beta)*oR
+    else:
+        xmin = np.cos(beta)*oR
+        ymax = oR
+    zgrid = t/(nz-1)
+    xgrid = (xmax-xmin)/(nx-1)
+    ygrid = 2*ymax/(nx-1)
 
     density = mass/(np.pi*(oR**2-iR**2)*t)
     pointMass = density*xgrid*ygrid*zgrid
@@ -272,12 +283,145 @@ def wedge(mass, iR, oR, t, theta, nx, nz):
         for l in range(nx):
             for m in range(nx):
                 # idx = k*nx*nx+l*nx+m
-                x = m*2*oR/float(nx)-oR
-                y = l*2*oR/float(nx)-oR
-                z = k*t/float(nz)-t/2.
+                x = m*xgrid + xmin
+                y = l*ygrid - ymax
+                z = k*zgrid - t/2
                 r = np.sqrt(x**2 + y**2)
                 q = np.arctan2(y, x)
-                if np.abs(q) <= theta and r <= oR and r >= iR:
+                if np.abs(q) <= beta and r <= oR and r >= iR:
+                    pointArray[ctr, 1:] = [x, y, z]
+                    ctr += 1
+
+    pointArray = pointArray[:ctr]
+
+    # Correct the masses of the points
+    pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
+
+    return pointArray
+
+
+def trapezoid(mass, iR, oR, t, beta, nx, nz):
+    """
+    Creates point masses distributed in a trapezoid of mass m. Centered
+    vertically about the xy-plane and displaced along the x-axis so that the
+    closest point to the origin is at iR*cos(beta).
+
+    Inputs
+    ------
+    m : float
+        mass in kg
+    iR : float
+        inner radius of trapezoid in m
+    oR : float
+        outer radius of trapezoid in m
+    t : float
+        thickness of trapezoid in m
+    beta : float
+        half of the subtended angle in radians, must be less than pi/2
+    nx : float
+        number of points distributed in x,y
+    nz : float
+        number of points distributed in z
+
+    Returns
+    -------
+    pointArray : ndarray
+        point mass array of format [m, x, y, z]
+    """
+    xclose = iR*np.cos(beta)
+    xfar = oR*np.cos(beta)
+    d = oR*np.sin(beta)
+    zgrid = t/(nz-1)
+    xgrid = (xfar-xclose)/(nx-1)
+    ygrid = 2*d/(nx-1)
+
+    density = mass/(np.pi*(oR**2-iR**2)*t)
+    pointMass = density*xgrid*ygrid*zgrid
+
+    pointArray = np.zeros([nx*nx*nz, 4])
+    if beta >= np.pi/2:
+        return pointArray
+    pointArray[:, 0] = pointMass
+    ctr = 0
+    for k in range(nz):
+        for l in range(nx):
+            for m in range(nx):
+                # idx = k*nx*nx+l*nx+m
+                x = m*xgrid + xclose
+                y = l*ygrid - d
+                z = k*zgrid - t/2
+                q = np.arctan2(y, x)
+                if np.abs(q) <= beta:
+                    pointArray[ctr, 1:] = [x, y, z]
+                    ctr += 1
+
+    pointArray = pointArray[:ctr]
+
+    # Correct the masses of the points
+    pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
+
+    return pointArray
+
+
+def outer_cone(mass, iR, oR, H, beta, nx, nz):
+    """
+    Creates point masses distributed in an annular cone of mass m. If iR=0, it
+    should be identical to cone. The sloped edge reaches a height H at iR and
+    is 0 at oR.
+
+    Inputs
+    ------
+    m : float
+        mass in kg
+    iR : float
+        inner radius of cone arc
+    oR : float
+        outer radius of cone arc in m
+    H : float
+        height of cone in m
+    beta : float
+        Half-subtended angle of annular cone segment
+    nx : float
+        number of points distributed in x,y
+    nz : float
+        number of points distributed in z
+
+    Returns
+    -------
+    pointArray : ndarray
+        point mass array of format [m, x, y, z]
+    """
+    xmax = oR
+    if beta < np.pi/2:
+        xmin = np.cos(beta)*iR
+        ymax = np.sin(beta)*oR
+    else:
+        xmin = np.cos(beta)*oR
+        ymax = oR
+    zgrid = H/(nz-1)
+    # not sure why this works better as 2*R/nx
+    # annulus suggests should be 2*R/(nx-1) but test_cone fails
+    xgrid = (xmax-xmin)/(nx-1)
+    ygrid = 2*ymax/(nx-1)
+    Hp = H*oR/(oR-iR)
+    vol = beta*(Hp*oR**2/3-H*iR**2-(Hp-H)*iR**2/3)
+
+    density = mass/vol
+    pointMass = density*xgrid*ygrid*zgrid
+    tanPhi = H/(oR-iR)
+
+    pointArray = np.zeros([nx*nx*nz, 4])
+    pointArray[:, 0] = pointMass
+    ctr = 0
+    for k in range(nz):
+        for l in range(nx):
+            for m in range(nx):
+                x = m*xgrid+xmin
+                y = l*ygrid-ymax
+                z = k*zgrid
+                q = np.arctan2(y, x)
+                r = np.sqrt(x**2 + y**2)
+                if (np.abs(q) <= beta) and (r <= oR-z/tanPhi) and (iR <= r):
                     pointArray[ctr, 1:] = [x, y, z]
                     ctr += 1
 

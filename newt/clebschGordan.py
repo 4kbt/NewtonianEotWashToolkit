@@ -55,9 +55,9 @@ def cgCoeff(j1, j2, m1, m2, J, M):
         m1 = -m1
         m2 = -m2
 
+    # kmin and kmax specify valid range of summatiion index for factorials
     kmin = max([0, j2-m1-J, j1+m2-J])
     kmax = min([j1+j2-J, j1-m1, j2+m2])
-    print(kmin, kmax)
     kmin, kmax = int(kmin), int(kmax)
     fac1 = sp.gammaln(J+j1-j2+1) + sp.gammaln(J-j1+j2+1)
     fac1 += sp.gammaln(j1+j2-J+1) - sp.gammaln(j1+j2+J+2)
@@ -126,7 +126,6 @@ def cgCoeff2(j1, j2, m1, m2, J, M):
 
     kmin = max([0, j2-J-m1, j1-J+m2])
     kmax = min([j1+j2-J, j1-m1, j2+m2])
-    print(kmin, kmax)
     kmin, kmax = int(kmin), int(kmax)
     fac1 = sp.gammaln(J+j1-j2+1) + sp.gammaln(J-j1+j2+1)
     fac1 += sp.gammaln(j1+j2-J+1) - sp.gammaln(j1+j2+J+2)

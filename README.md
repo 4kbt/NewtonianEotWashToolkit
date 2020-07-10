@@ -63,6 +63,8 @@ compute the interactions in an entirely different and often useful perspective.
 This portion is based largely on the private program, MULTIN, of Prof.
 Adelberger.
 
+Example calculations are explained [here][newt/example/exampleMulti.md]
+
 ## References
 1. [https://github.com/4kbt/PointGravity][10]
 1. [A Sub-Millimeter Parallel-Plate Test of Gravity][1]
@@ -102,12 +104,12 @@ pip install .
 - [X] Multipole shapes adelberger
 - [X] multipole shape comparisons
 - [X] Multipole translation
-- [_] Recursive translation matrices
+- [ ] Recursive translation matrices
 - [X] More tests
-- [_] Always more tests!
-- [_] pip package
-- [_] More Doc Strings
+- [ ] Always more tests!
+- [ ] pip package
+- [ ] More Doc Strings
 - [X] Pull request to Charlie's Octave version &#8594; Collaborator
 - [X] Outer Multipoles from point-mass
 - [X] Example visualization
-- [_] Example calculations
+- [X] Example calculations
