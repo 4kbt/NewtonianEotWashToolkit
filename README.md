@@ -1,7 +1,9 @@
 # NEWT (Newtonian E&ouml;t-Wash Toolkit)
+[![Build Status](https://travis-ci.com/JGLee6/PointGravity.svg?branch=master)](https://travis-ci.com/JGLee6/PointGravity)
 ## A package for calculating forces and torques with Newtonian gravity from the E&ouml;t-Wash group
 ### Author (Octave): Charlie Hagedorn
 ### Author (Python): John G. Lee
+
 
 ## Introduction
 
@@ -11,8 +13,8 @@ due to a gravitational or Yukawa interaction. It does so in the most simple
 discretize our shapes with a 3-dimensional array of points. We can then 
 compute the force or torque between each unique pair of points and sum up the 
 total for the entire body. Gravity depends only linearly on the source masses, 
-so many complicated shapes can be modeled by just summing up individual simple 
-components.
+so many complicated shapes can be modeled by just concatenating lists of 
+individual simple components.
 
 We can also simply visualize the point mass arrays using a 3-d plot.
 
@@ -24,7 +26,7 @@ The python implementation of PointGravity is a nearly identical framework of
 the work of Dr. Charlie Hagedorn. For instance, to generate the figure shown
 above:
 
- 
+
 ```python
 import numpy as np
 import newt.glib as glb
@@ -112,6 +114,7 @@ We ask that anyone using this package cite this [reference][2]
 - [ ] Always more tests!
 - [ ] pip package
 - [ ] More Doc Strings
+- [ ] Implement tests against MULTIN outputs
 - [X] Pull request to Charlie's Octave version &#8594; Collaborator
 - [X] Outer Multipoles from point-mass
 - [X] Example visualization

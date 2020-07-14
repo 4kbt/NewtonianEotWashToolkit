@@ -30,7 +30,7 @@ def sphere(L, mass, R):
         (L+1)x(2L+1) array of complex moment values
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    qlm[0, L] = np.sqrt(1/(4*np.pi))*mass*4*np.pi*R**3/3
+    qlm[0, L] = mass/np.sqrt((4*np.pi))
     return qlm
 
 
@@ -508,7 +508,7 @@ def tetrahedron(L, mass, x, y, z):
     Inputs
     ------
     L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+        Maximum order of inner multipole moments
     mass : float
         Mass of the tetrahedron
     x : float
@@ -568,7 +568,7 @@ def tetrahedron2(L, mass, x, y1, y2, z):
     Inputs
     ------
     L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+        Maximum order of inner multipole moments
     mass : float
         Mass of the tetrahedron
     x : float
@@ -628,7 +628,7 @@ def pyramid(L, mass, x, y, z):
     Inputs
     ------
     L : int
-        Maximum order of inner multipole moments. Only known to L=5.
+        Maximum order of inner multipole moments
     mass : float
         Mass of the pyramid
     x : float
