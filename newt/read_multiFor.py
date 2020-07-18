@@ -76,7 +76,7 @@ def read_gbq(filename, filepath='C:\\mom\\'):
     return Qlmb
 
 
-def read_mpc(LMax, filename, gsq=True, filepath='C:\\mpc\\'):
+def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
     """
     Attempts to open .mpc files in the same manner as MULTIN by having a
     'working register' and a 'total register'. That is, there are two sets of
@@ -189,7 +189,6 @@ def read_mpc(LMax, filename, gsq=True, filepath='C:\\mpc\\'):
                 t, r = t*fac, r*fac
                 theta *= np.pi/180
                 dens = float(lines[4+k].split(',')[0])*1000
-                mass = dens
                 qlmWrk = qlmA.platehole(LMax, dens, t, r, theta)
                 pos = np.array(lines[5+k].split(','), dtype=float)*fac
                 k += 3
@@ -204,7 +203,6 @@ def read_mpc(LMax, filename, gsq=True, filepath='C:\\mpc\\'):
                 line2 = [float(val)*fac for val in lines[3+k].split(',')]
                 r, R = line2
                 dens = float(lines[4+k].split(',')[0])*1000
-                mass = dens
                 qlmWrk = qlmA.cylhole(LMax, dens, r, R)
                 pos = np.array(lines[5+k].split(','), dtype=float)*fac
                 k += 3
