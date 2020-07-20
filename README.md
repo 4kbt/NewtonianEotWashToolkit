@@ -1,7 +1,9 @@
 # NEWT (Newtonian E&ouml;t-Wash Toolkit)
+[![Build Status](https://travis-ci.com/JGLee6/PointGravity.svg?branch=master)](https://travis-ci.com/JGLee6/PointGravity)
 ## A package for calculating forces and torques with Newtonian gravity from the E&ouml;t-Wash group
 ### Author (Octave): Charlie Hagedorn
 ### Author (Python): John G. Lee
+
 
 ## Introduction
 
@@ -11,8 +13,8 @@ due to a gravitational or Yukawa interaction. It does so in the most simple
 discretize our shapes with a 3-dimensional array of points. We can then 
 compute the force or torque between each unique pair of points and sum up the 
 total for the entire body. Gravity depends only linearly on the source masses, 
-so many complicated shapes can be modeled by just summing up individual simple 
-components.
+so many complicated shapes can be modeled by just concatenating lists of 
+individual simple components.
 
 We can also simply visualize the point mass arrays using a 3-d plot.
 
@@ -24,7 +26,7 @@ The python implementation of PointGravity is a nearly identical framework of
 the work of Dr. Charlie Hagedorn. For instance, to generate the figure shown
 above:
 
- 
+
 ```python
 import numpy as np
 import newt.glib as glb
@@ -60,10 +62,10 @@ several low order moments of basic shapes ([ref][6], [ref][7]) or estimate the m
 point-mass array. We can rotate these moments to large orders ([ref][4]) and 
 translate moments in several ways ([ref][2], [ref][3]). This allows us to
 compute the interactions in an entirely different and often useful perspective.
-This portion is based largely on the private program, MULTIN, of Prof.
-Adelberger.
+Not only that, but it's WAY FASTER! This portion is based largely on the
+private program, MULTIN, of Prof. Adelberger.
 
-Example calculations are explained [here][newt/example/exampleMulti.md]
+Example calculations are explained [here](newt/example/exampleMulti.md)
 
 ## References
 1. [https://github.com/4kbt/PointGravity][10]
@@ -96,6 +98,9 @@ containing the setup.py file. Then simply install using pip.
 pip install .
 ```
 
+## Citing
+We ask that anyone using this package cite this [reference][2]
+
 ### To Do
 - [X] Multipole rotations
 - [X] Multipole torques
@@ -109,6 +114,7 @@ pip install .
 - [ ] Always more tests!
 - [ ] pip package
 - [ ] More Doc Strings
+- [ ] Implement tests against MULTIN outputs
 - [X] Pull request to Charlie's Octave version &#8594; Collaborator
 - [X] Outer Multipoles from point-mass
 - [X] Example visualization

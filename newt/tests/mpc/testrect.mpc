@@ -1,0 +1,9 @@
+test rectangle                                                        
+nsteps 24
+inchin
+create rectangle red
+2.00000,3.00000,4.00000
+1.0
+0,0,0
+add
+end

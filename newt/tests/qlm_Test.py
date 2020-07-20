@@ -7,6 +7,7 @@ Created on Thu Apr 30 18:13:35 2020
 import numpy as np
 import newt.qlm as qlm
 import newt.qlmACH as qlmA
+import newt.qlmNum as qlmN
 import newt.translations as trs
 import newt.rotations as rot
 
@@ -47,6 +48,9 @@ def test_annulus2():
     qcyl = qlm.annulus(5, 1, 1, 2, 3, np.pi/3, np.pi/8)
     rho = 8/(np.pi*(3**2-2**2))
     qcyl2 = qlmA.annulus(5, rho, 1, 2, 3, np.pi/3, np.pi/8)
+    assert (abs(qcyl-qcyl2) < 90*np.finfo(float).eps).all()
+    qcyl3 = qlmN.cyl_mom(5, rho, np.pi/8, 2, 3, -.5, .5)
+    qcyl3 = rot.rotate_qlm(qcyl3, np.pi/3, 0, 0)
     assert (abs(qcyl-qcyl2) < 90*np.finfo(float).eps).all()
     # Test explicit formula for L<5 (we'll do L=3)
     qcyl2 = qlmA.annulus(3, rho, 1, 2, 3, np.pi/3, np.pi/8)
@@ -177,3 +181,31 @@ def test_pyramid():
     # Test explicit formula for L<5 (we'll do L=3)
     pyr = qlmA.pyramid(3, 1, 3, 2, 2)
     assert (np.shape(pyr) == (4, 7))
+
+
+def test_cylhole():
+    """
+    Tests Steinmetz solid
+
+    XXX : fails for q22 and q44
+    """
+    stein3 = qlmA.cylhole(5, 1, 2, 5)
+    stein4 = qlmN.steinmetz(5, 1, 2, 5)
+    stein4 = rot.rotate_qlm(stein4, np.pi/2, 0, 0)
+    assert (abs(stein3-stein4)[:2] < 1e3*np.finfo(float).eps).all()
+    # Test explicit formula for L<5 (we'll do L=3)
+    stein2 = qlmA.cylhole(3, 1, 1, 2)
+    assert (np.shape(stein2) == (4, 7))
+
+
+def test_platehole():
+    """
+    Tests platehole against numerical calculation
+    """
+    ph = qlmN.platehole(5, 1, 1, .5, np.pi/3)
+    ph = rot.rotate_qlm(ph, 0, np.pi/3, 0)
+    pha = qlmA.platehole(5, 1, 1, .5, np.pi/3)
+    assert (abs(ph-pha) < 2e3*np.finfo(float).eps).all()
+    # Test explicit formula for L<5 (we'll do L=3)
+    pha = qlmA.platehole(3, 1, 1, .5, np.pi/3)
+    assert (np.shape(pha) == (4, 7))

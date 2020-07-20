@@ -12,7 +12,7 @@ BIG_G = 6.67428e-11
 
 def force_basis(L, x, y, z):
     """
-    Calculates the force basis at a position (x, y, z) out to a maximum order
+    Calculates the force basis at a position (x, y, z) out to a maximum degree
     of L. It simultaneously calculates the improperly normalized regular solid
     harmonics as given recursively in Stirling (2017).
     """
@@ -29,19 +29,19 @@ def force_basis(L, x, y, z):
         ytilC[0, L] = 1
         r2 = x**2 + y**2 + z**2
         for l in range(1, L+1):
+            l21 = 2*l-1
             ytilC[l, L+l] = -(x-1j*y)*ytilC[l-1, L+l-1]/(2*l)
             bX[l, L+l] = -(ytilC[l-1, L+l-1] + bX[l-1, L+l-1]*(x-1j*y))/(2*l)
             bY[l, L+l] = (1j*ytilC[l-1, L+l-1] - bY[l-1, L+l-1]*(x-1j*y))/(2*l)
             bZ[l, L+l] = -(bZ[l-1, L+l-1]*(x-1j*y))/(2*l)
             if l == 1:
-                ytilC[l, L] = (2*l-1)*z*ytilC[0, L]/(l**2)
-                bX[l, L] = (2*l-1)*z*bX[0, L]/(l**2)
-                bY[l, L] = (2*l-1)*z*bY[0, L]/(l**2)
-                bZ[l, L] = (2*l-1)*(ytilC[0, L]+z*bZ[0, L])/(l**2)
+                ytilC[l, L] = l21*z*ytilC[0, L]/(l**2)
+                bX[l, L] = l21*z*bX[0, L]/(l**2)
+                bY[l, L] = l21*z*bY[0, L]/(l**2)
+                bZ[l, L] = l21*(ytilC[0, L]+z*bZ[0, L])/(l**2)
             else:
                 for m in range(l):
                     l2m2 = l**2 - m**2
-                    l21 = 2*l-1
                     ytilC[l, L+m] = l21*z*ytilC[l-1, L+m] - r2*ytilC[l-2, L+m]
                     ytilC[l, L+m] /= l2m2
                     bX[l, L+m] = (l21*z*bX[l-1, L+m])/l2m2
@@ -66,15 +66,15 @@ def force_basis(L, x, y, z):
 def multipole_force(LMax, qlm, Qlmb, x, y, z):
     """
     Calculates the gravitational force from outer multipole moments Qlmb on
-    inner multipole moments qlm centered at a position (x, y, z). The order of
+    inner multipole moments qlm centered at a position (x, y, z). The degree of
     the moments should all match LMax. Based on the work of Stirling (2017).
 
     Inputs
     ------
     qlm : ndarray
-        (L+1)x(2L+1) array of sensor (interior) lowest order multipole moments.
+        (L+1)x(2L+1) array of sensor (interior) lowest degree multipole moments.
     Qlm : ndarray
-        (L+1)x(2L+1) array of sensor (outer) lowest order multipole moments.
+        (L+1)x(2L+1) array of sensor (outer) lowest degree multipole moments.
 
     Returns
     -------
@@ -85,16 +85,18 @@ def multipole_force(LMax, qlm, Qlmb, x, y, z):
     force = np.zeros(3, dtype='complex')
     fac = 4*np.pi*BIG_G
     for lo in range(LMax+1):
+        lofac = (2*lo+1)
         for mo in range(-lo, lo+1):
+            gamlomo = sp.gammaln(lo+mo+1) + sp.gammaln(lo-mo+1)
+            mofac = qlm[lo, LMax+mo]*fac
             for l in range(lo+1, LMax+1):
                 lp = l-lo
                 lfac = (2*l+1)
-                lofac = (2*lo+1)
+                lmofac = mofac/lfac*np.sqrt(lfac/lofac)
                 for m in range(mo-lp, mo+lp+1):
-                    fac2 = fac*Qlmb[l, LMax+m]*qlm[lo, LMax+mo]/lfac
                     gamsum = sp.gammaln(l+m+1) + sp.gammaln(l-m+1)
-                    gamsum -= sp.gammaln(lo+mo+1) + sp.gammaln(lo-mo+1)
-                    fac2 *= np.sqrt(lfac/lofac*np.exp(gamsum))
+                    gamsum -= gamlomo
+                    fac2 = Qlmb[l, LMax+m]*lmofac*np.sqrt(np.exp(gamsum))
                     force[0] += fac2*bX[l-lo, LMax+m-mo]
                     force[1] += fac2*bY[l-lo, LMax+m-mo]
                     force[2] += fac2*bZ[l-lo, LMax+m-mo]
@@ -126,9 +128,9 @@ def torque_lm(L, qlm, Qlm):
     Inputs
     ------
     qlm : ndarray, complex
-        (L+1)x(2L+1) array of sensor (interior) lowest order multipole moments.
+        (L+1)x(2L+1) array of sensor (interior) lowest degree multipole moments
     Qlm : ndarray, complex
-        (L+1)x(2L+1) array of source (exterior) lowest order multipole moments.
+        (L+1)x(2L+1) array of source (exterior) lowest degree multipole moments
 
     Returns
     -------
@@ -155,13 +157,13 @@ def torque_lm(L, qlm, Qlm):
 
 def embed_qlm(qlm, LNew):
     """
-    Embed or truncate the moments qlm given up to order LOld, in a space of
-    moments given up to order LNew >= 0, assuming all higher order moments are
-    zero. Typically, this should not be done in order to preserve accuracy.
+    Embed or truncate the moments qlm given up to degree LOld, in a space of
+    moments given up to degree LNew >= 0, assuming all higher degree moments
+    are zero. Typically, this should not be done in order to preserve accuracy.
     """
     LOld = np.shape(qlm)[0] - 1
     if LNew < 0:
-        print('Order cannot be negative')
+        print('degree cannot be negative')
         qNew = 0
     elif LNew < LOld:
         qNew = np.zeros([LNew+1, 2*LNew+1], dtype='complex')
