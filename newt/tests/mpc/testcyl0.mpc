@@ -1,0 +1,9 @@
+test cylinder for q20                                                 
+nsteps 24
+inchin
+create cylinder red
+0,1.00000,.86602,0,180
+1.0
+0,0,0
+add
+end

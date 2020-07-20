@@ -97,35 +97,34 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
         lines = f.readlines()
     title = lines[0]
     print(title)
-    nsteps = lines[1].split()[-1]
-    if 'cmin' in lines[2]:
-        fac = 1e-2
-    else:
-        fac = 25.4e-3
-    nlines = len(lines[2:])
+    # We don't actually use n integration in this
+    nsteps = 25
+    # Assume units are centimeters unless told otherwise
+    fac = 1e-2
+    nlines = len(lines[1:])
     qlmTot = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
     qlmWrk = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
     k = 0
     while k < nlines:
-        line = lines[2+k]
+        line = lines[1+k]
         # Get rid of stuff after a comment
         line = line.split('%')[0]
         if 'create' in line:
             print(line)
             shape = line.split('create')[1].split()[0]
             if shape == 'cylinder':
-                line2 = [float(val) for val in lines[3+k].split(',')]
+                line2 = [float(val) for val in lines[2+k].split(',')]
                 Ri, Ro, H, phi0, phi1 = line2
                 Ri, Ro, H = Ri*fac, Ro*fac, H*fac
                 phic = (phi1+phi0)*np.pi/180/2
                 phih = (phi1-phi0)*np.pi/180/2
-                dens = float(lines[4+k].split(',')[0])*1000
+                dens = float(lines[3+k].split(',')[0])*1000
                 mass = dens*phih*H*(Ro**2-Ri**2)
                 print(dens, line2)
                 qlmWrk = qlm.annulus(LMax, mass, H, Ri, Ro, phic, phih)
-                pos = np.array(lines[5+k].split(','), dtype=float)*fac
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
-                if (pos == 0).all() and ('add' in lines[3+k]):
+                if (pos == 0).all() and ('add' in lines[2+k]):
                     k += 1
                     print('added ', shape)
                     qlmTot += qlmWrk
@@ -133,14 +132,14 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     print('translated ', shape)
                     qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'sphere':
-                line2 = [float(val)*fac for val in lines[3+k].split(',')]
+                line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 r = line2
-                dens = float(lines[4+k].split(',')[0])*1000
+                dens = float(lines[3+k].split(',')[0])*1000
                 mass = dens*4/3*np.pi*r**3
                 qlmWrk = qlm.rect_prism(LMax, mass, r)
-                pos = np.array(lines[5+k].split(','), dtype=float)*fac
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
-                if (pos == 0).all() and ('add' in lines[3+k]):
+                if (pos == 0).all() and ('add' in lines[2+k]):
                     k += 1
                     print('added ', shape)
                     qlmTot += qlmWrk
@@ -148,16 +147,30 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     print('translated ', shape)
                     qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'cone':
-                qlmTot += 0
+                line2 = [float(val)*fac for val in lines[2+k].split(',')]
+                LR, UR, H = line2
+                dens = float(lines[3+k].split(',')[0])*1000
+                mass = dens*np.pi*H*LR**2/3
+                print(LR, UR, H, dens, mass)
+                qlmWrk = qlm.cone(LMax, mass, H, LR, 0, np.pi)
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
+                k += 3
+                if (pos == 0).all() and ('add' in lines[2+k]):
+                    k += 1
+                    print('added ', shape)
+                    qlmTot += qlmWrk
+                else:
+                    print('translated ', shape)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'triangle':
-                line2 = [float(val)*fac for val in lines[3+k].split(',')]
+                line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 d, y1, y2, t = line2
-                dens = float(lines[4+k].split(',')[0])*1000
+                dens = float(lines[3+k].split(',')[0])*1000
                 mass = dens*t*d*abs(y2-y1)
                 qlmWrk = qlm.tri_prism(LMax, mass, t, d, y1, y2)
-                pos = np.array(lines[5+k].split(','), dtype=float)*fac
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
-                if (pos == 0).all() and ('add' in lines[3+k]):
+                if (pos == 0).all() and ('add' in lines[2+k]):
                     k += 1
                     print('added ', shape)
                     qlmTot += qlmWrk
@@ -169,14 +182,14 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
             elif shape == 'partcylinder':
                 qlmTot += 0
             elif shape == 'tetrahedron':
-                line2 = [float(val)*fac for val in lines[3+k].split(',')]
+                line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 x, y, z = line2
-                dens = float(lines[4+k].split(',')[0])*1000
+                dens = float(lines[3+k].split(',')[0])*1000
                 mass = dens*x*y*z/6
                 qlmWrk = qlm.tetrahedron(LMax, mass, x, y, z)
-                pos = np.array(lines[5+k].split(','), dtype=float)*fac
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
-                if (pos == 0).all() and ('add' in lines[3+k]):
+                if (pos == 0).all() and ('add' in lines[2+k]):
                     k += 1
                     print('added ', shape)
                     qlmTot += qlmWrk
@@ -184,15 +197,15 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     print('translated ', shape)
                     qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'platehole':
-                line2 = [float(val) for val in lines[3+k].split(',')]
+                line2 = [float(val) for val in lines[2+k].split(',')]
                 t, r, theta = line2
                 t, r = t*fac, r*fac
                 theta *= np.pi/180
-                dens = float(lines[4+k].split(',')[0])*1000
+                dens = float(lines[3+k].split(',')[0])*1000
                 qlmWrk = qlmA.platehole(LMax, dens, t, r, theta)
-                pos = np.array(lines[5+k].split(','), dtype=float)*fac
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
-                if (pos == 0).all() and ('add' in lines[3+k]):
+                if (pos == 0).all() and ('add' in lines[2+k]):
                     k += 1
                     print('added ', shape)
                     qlmTot += qlmWrk
@@ -200,13 +213,13 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     print('translated ', shape)
                     qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'cylhole':
-                line2 = [float(val)*fac for val in lines[3+k].split(',')]
+                line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 r, R = line2
-                dens = float(lines[4+k].split(',')[0])*1000
+                dens = float(lines[3+k].split(',')[0])*1000
                 qlmWrk = qlmA.cylhole(LMax, dens, r, R)
-                pos = np.array(lines[5+k].split(','), dtype=float)*fac
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
-                if (pos == 0).all() and ('add' in lines[3+k]):
+                if (pos == 0).all() and ('add' in lines[2+k]):
                     k += 1
                     print('added ', shape)
                     qlmTot += qlmWrk
@@ -214,14 +227,14 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     print('translated ', shape)
                     qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'rectangle':
-                line2 = [float(val)*fac for val in lines[3+k].split(',')]
+                line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 x, y, z = line2
-                dens = float(lines[4+k].split(',')[0])*1000
+                dens = float(lines[3+k].split(',')[0])*1000
                 mass = dens*x*y*z
-                qlmWrk = qlm.rect_prism(LMax, mass, z, x/2, y/2, 0)
-                pos = np.array(lines[5+k].split(','), dtype=float)*fac
+                qlmWrk = qlm.rect_prism(LMax, mass, z, x, y, 0)
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
-                if (pos == 0).all() and ('add' in lines[3+k]):
+                if (pos == 0).all() and ('add' in lines[2+k]):
                     k += 1
                     print('added ', shape)
                     qlmTot += qlmWrk
@@ -231,7 +244,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
             else:
                 print(shape, ' does not have a known set of moments')
                 for n in range(nlines-k):
-                    line2 = lines[2+k+1]
+                    line2 = lines[1+k+1]
                     if ('create' not in line2) and ('end' not in line2):
                         k += 1
                     else:
@@ -250,6 +263,14 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
         elif 'add' in line:
             print('added ', shape)
             qlmTot += qlmWrk
+        elif 'cmin' in line:
+            print('parameters in centimeters')
+            fac = 1e-2
+        elif 'inchin' in line:
+            print('parameters in inches')
+            fac = 25.4e-3
+        elif 'nsteps' in line:
+            nsteps = line.split()[-1]
         elif 'end' in line:
             print('end')
             break
