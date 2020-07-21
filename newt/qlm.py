@@ -174,7 +174,7 @@ def cone(L, mass, P, R, phic, phih):
             for k in range((l-m)//2+1):
                 gamsum = sp.gammaln(2*k+m+2)
                 gamsum -= sp.gammaln(k+1) + sp.gammaln(m+k+1)
-                slk = (-1)**(k+m)*P**(l-2*k-m)*R**(2*k+l)/(2**(2*k+m-1))
+                slk = (-1)**(k+m)*P**(l-2*k-m)*R**(2*k+m)/(2**(2*k+m-1))
                 qlm[l, L+m] += slk*np.exp(gamsum)
             # Multiply by factor dependent only on (l,m)
             qlm[l, L+m] *= fac2

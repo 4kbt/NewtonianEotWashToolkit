@@ -133,10 +133,10 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'sphere':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
-                r = line2
+                r = line2[0]
                 dens = float(lines[3+k].split(',')[0])*1000
                 mass = dens*4/3*np.pi*r**3
-                qlmWrk = qlm.rect_prism(LMax, mass, r)
+                qlmWrk = qlm.sphere(LMax, mass, r)
                 pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
                 if (pos == 0).all() and ('add' in lines[2+k]):
