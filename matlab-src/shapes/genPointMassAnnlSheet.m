@@ -73,3 +73,15 @@ end
 %! %Is mass properly normalized?
 %! assert( sum(M(:,1)) == 1);
 %! assert( sum(abs( diff( M(:,1) ) ) )  < rows(M) * eps);
+%! 
+%! %Are points properly distributed?
+%! assert( genPointMassAnnlSheet( 1, 0 , 1, 1, 1,1) == [ 1 0 0 0 ])
+%!
+%! assert( M == [ 0.125 -0.25 -0.5 -0.5;
+%!                0.125 -0.25 -0.5  0.5;
+%!                0.125 -0.25  0.5 -0.5;
+%!                0.125 -0.25  0.5  0.5;
+%!                0.125  0.25 -0.5 -0.5;
+%!                0.125  0.25 -0.5  0.5;
+%!                0.125  0.25  0.5 -0.5;
+%!                0.125  0.25  0.5  0.5;] )
