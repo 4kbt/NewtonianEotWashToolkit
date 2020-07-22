@@ -117,8 +117,8 @@ def annulus(mass, iR, oR, t, nx, nz):
     pointArray : ndarray
         point mass array of format [m, x, y, z]
     """
-    zgrid = t/float(nz-1)
-    xgrid = oR*2./float(nx-1)
+    zgrid = t/float(nz)
+    xgrid = oR*2./float(nx)
     ygrid = xgrid
 
     density = mass/(np.pi*(oR**2-iR**2)*t)
@@ -126,12 +126,14 @@ def annulus(mass, iR, oR, t, nx, nz):
 
     pointArray = np.zeros([nx*nx*nz, 4])
     pointArray[:, 0] = pointMass
+    loopCounter = 0
     for k in range(nz):
         for l in range(nx):
             for m in range(nx):
-                pointArray[k*nx*nx+l*nx+m, 1] = m*xgrid-oR
-                pointArray[k*nx*nx+l*nx+m, 2] = l*ygrid-oR
-                pointArray[k*nx*nx+l*nx+m, 3] = k*zgrid-t/2.
+                pointArray[loopCounter, 1] = (m-(nx-1)/2)*xgrid
+                pointArray[loopCounter, 2] = (l-(nx-1)/2)*ygrid
+                pointArray[loopCounter, 3] = (k-(nz-1)/2)*zgrid
+                loopCounter += 1
 
     pointArray = np.array([pointArray[k] for k in range(nx*nx*nz) if
                            pointArray[k, 1]**2+pointArray[k, 2]**2 >= iR**2 and
