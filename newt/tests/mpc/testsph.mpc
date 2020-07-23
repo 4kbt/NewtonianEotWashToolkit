@@ -1,0 +1,9 @@
+test sphere                                                           
+nsteps 24
+cmin
+create sphere red
+3.00000
+1.0
+0,0,0
+add
+end

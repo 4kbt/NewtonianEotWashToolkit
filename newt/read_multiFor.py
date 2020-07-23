@@ -166,7 +166,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 d, y1, y2, t = line2
                 dens = float(lines[3+k].split(',')[0])*1000
-                mass = dens*t*d*abs(y2-y1)
+                mass = dens*t*d*abs(y2-y1)/2
                 qlmWrk = qlm.tri_prism(LMax, mass, t, d, y1, y2)
                 pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
@@ -198,11 +198,12 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'platehole':
                 line2 = [float(val) for val in lines[2+k].split(',')]
-                t, r, theta = line2
+                r, t, theta = line2
                 t, r = t*fac, r*fac
                 theta *= np.pi/180
                 dens = float(lines[3+k].split(',')[0])*1000
                 qlmWrk = qlmA.platehole(LMax, dens, t, r, theta)
+                qlmWrk = rot.rotate_qlm(qlmWrk, 0, theta, 0)
                 pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
                 if (pos == 0).all() and ('add' in lines[2+k]):
@@ -217,6 +218,21 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                 r, R = line2
                 dens = float(lines[3+k].split(',')[0])*1000
                 qlmWrk = qlmA.cylhole(LMax, dens, r, R)
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
+                k += 3
+                if (pos == 0).all() and ('add' in lines[2+k]):
+                    k += 1
+                    print('added ', shape)
+                    qlmTot += qlmWrk
+                else:
+                    print('translated ', shape)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+            elif shape == 'pyramid':
+                line2 = [float(val)*fac for val in lines[2+k].split(',')]
+                x, y, z = line2
+                dens = float(lines[3+k].split(',')[0])*1000
+                mass = dens*x*y*z/3
+                qlmWrk = qlm.pyramid(LMax, mass, x/2, y/2, z)
                 pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
                 if (pos == 0).all() and ('add' in lines[2+k]):

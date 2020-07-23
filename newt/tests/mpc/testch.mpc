@@ -1,0 +1,9 @@
+test cylhole                                                          
+nsteps 24
+cmin
+create cylhole red
+1.00000,2.00000
+1.0
+0,0,0
+add
+end
