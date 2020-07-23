@@ -1,0 +1,9 @@
+test cone                                                             
+nsteps 24
+cmin
+create cone red
+3.00000,.00000,2.00000
+1.0
+0,0,0
+add
+end

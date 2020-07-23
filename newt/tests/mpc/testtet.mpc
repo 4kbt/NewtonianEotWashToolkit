@@ -1,0 +1,9 @@
+test tetrahedron                                                      
+nsteps 24
+cmin
+create tetrahedron red
+2.00000,3.00000,4.00000
+1.0
+0,0,0
+add
+end
