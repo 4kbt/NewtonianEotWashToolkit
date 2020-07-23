@@ -8,8 +8,8 @@ import newt.read_multiFor as rmf
 import numpy as np
 import pytest
 
-MPCPATH = '.\\newt\\tests\\mpc\\'
-MOMPATH = '.\\newt\\tests\\mom\\'
+MPCPATH = './newt/tests/mpc/'
+MOMPATH = './newt/tests/mom/'
 
 
 def test_sph():
@@ -61,3 +61,10 @@ def test_cyl():
     testcyl = rmf.read_mpc(10, 'testcyl0.mpc', MPCPATH)
     testcyl1 = rmf.read_gsq('testcyl0.gsq', MOMPATH)
     assert (np.abs(testcyl - testcyl1) < 1e6*np.finfo(float).eps).all()
+
+
+@pytest.mark.xfail
+def test_pyr():
+    testpyr = rmf.read_mpc(10, 'testpyr.mpc', MPCPATH)
+    testpyr2 = rmf.read_gsq('testpyr', MOMPATH)
+    assert (np.abs(testpyr - testpyr2) < 1e6*np.finfo(float).eps).all()
