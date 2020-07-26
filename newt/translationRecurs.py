@@ -297,9 +297,88 @@ def transl_newt_z_RR_recurs2(LMax, dr):
     return rrms
 
 
+def transl_newt_z_SS_recurs2(LMax, dr):
+    """
+    Translate coaxially from regular to regular, Gumerov and Duraiswami. In a
+    slight contradiction to the paper, our choice of normalization (alpha_n^m)
+    does not require all three normalization factors in the translation matrix,
+    see eqn 19.
+
+    Inputs
+    ------
+    l : int
+        Order of multipole expansion to output rotation matrix coefficient H
+
+    Reference
+    ---------
+    "Comparison of the efficiency of translation operators used in the fast
+    multipole method for the 3D Laplace equation"
+
+    http://legacydirs.umiacs.umd.edu/~gumerov/PDFs/cs-tr-4701.pdf
+    """
+    # Descending array of lp from LMax through 0
+    lp = np.arange(LMax+1)
+    rvals = (-dr)**lp/sp.factorial(lp)
+    cols = [rvals[0], *np.zeros(LMax)]
+    ssms = []
+    fac = betanm(lp, 0)
+    fac2 = np.outer(1/fac, fac)
+    ssms.append((sla.toeplitz(cols, rvals)*fac2))
+    # Each m has a matrix that is (LMax-|m|)x(LMax-|m|) in size
+    for m in range(1, LMax+1):
+        fac = betanm(np.arange(m, LMax+1), m)
+        fac2 = np.outer(1/fac, fac)
+        ssm = sla.toeplitz(cols[:-m], rvals[:-m])*fac2
+        ssms.append(ssm)
+    return ssms
+
+
+def transl_newt_z_SR_recurs2(LMax, dr):
+    """
+    Translate coaxially from regular to regular, Gumerov and Duraiswami. In a
+    slight contradiction to the paper, our choice of normalization (alpha_n^m)
+    does not require all three normalization factors in the translation matrix,
+    see eqn 19.
+
+    Inputs
+    ------
+    l : int
+        Order of multipole expansion to output rotation matrix coefficient H
+
+    Reference
+    ---------
+    "Comparison of the efficiency of translation operators used in the fast
+    multipole method for the 3D Laplace equation"
+
+    http://legacydirs.umiacs.umd.edu/~gumerov/PDFs/cs-tr-4701.pdf
+    """
+    # Descending array of lp from LMax through 0
+    lp = np.arange(LMax+1)
+    rvals = sp.factorial(lp)/dr**(lp+1)
+    cols = [rvals[0], *np.zeros(LMax)]
+    ssms = []
+    faca = alphanm(lp, 0)
+    facb = betanm(lp, 0)
+    fac2 = np.outer(faca, 1/facb)
+    ssms.append((sla.toeplitz(cols, rvals)*fac2))
+    # Each m has a matrix that is (LMax-|m|)x(LMax-|m|) in size
+    for m in range(1, LMax+1):
+        faca = alphanm(np.arange(m, LMax+1), m)
+        facb = betanm(np.arange(m, LMax+1), m)
+        fac2 = np.outer(faca, 1/facb)
+        ssm = sla.toeplitz(cols[:-m], rvals[:-m])*fac2
+        ssms.append(ssm)
+    return ssms
+
+
 def alphanm(n, m):
     anm = (-1)**n*1j**(-np.abs(m))*np.sqrt(4*np.pi/((2*n+1)*sp.factorial(n-m)*sp.factorial(n+m)))
     return anm
+
+
+def betanm(n, m):
+    bnm = 1j**(np.abs(m))*np.sqrt(4*np.pi*sp.factorial(n-m)*sp.factorial(n+m)/(2*n+1))
+    return bnm
 
 
 def apply_trans_mat(qlm, efms):
