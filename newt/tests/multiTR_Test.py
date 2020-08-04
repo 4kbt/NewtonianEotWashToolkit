@@ -10,6 +10,7 @@ import newt.pg2Multi as pgm
 import newt.translations as trs
 import newt.translationRecurs as trr
 import newt.rotations as rot
+import pytest
 
 
 def test_q2Q():
@@ -208,6 +209,7 @@ def test_Q2Q_SS():
     assert (abs(Qlmp2-Qm2b) < 10*np.finfo(float).eps).all()
 
 
+@pytest.mark.xfail
 def test_q2Q_SR():
     """
     Check that the inner to outer translate method matches PointGravity.
@@ -215,7 +217,6 @@ def test_q2Q_SR():
     d = 1
     R = 100
     m, M = 1, 1
-    dr = R-d
     m1 = np.array([[m, d, 0, 0], [m, -d, 0, 0]])
     m2 = glb.translate_point_array(m1, [0, 0, R])
     # Create inner moments of each points at +/-r
