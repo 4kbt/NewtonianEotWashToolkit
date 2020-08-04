@@ -56,15 +56,13 @@ def test_cylhole():
     assert (np.abs(testch - testch2) < 2e8*np.finfo(float).eps).all()
 
 
-@pytest.mark.xfail
 def test_cyl():
     testcyl = rmf.read_mpc(10, 'testcyl0.mpc', MPCPATH)
     testcyl1 = rmf.read_gsq('testcyl0.gsq', MOMPATH)
     assert (np.abs(testcyl - testcyl1) < 1e6*np.finfo(float).eps).all()
 
 
-@pytest.mark.xfail
 def test_pyr():
     testpyr = rmf.read_mpc(10, 'testpyr.mpc', MPCPATH)
     testpyr2 = rmf.read_gsq('testpyr', MOMPATH)
-    assert (np.abs(testpyr - testpyr2) < 1e6*np.finfo(float).eps).all()
+    assert (np.abs(testpyr - testpyr2) < 1e7*np.finfo(float).eps).all()

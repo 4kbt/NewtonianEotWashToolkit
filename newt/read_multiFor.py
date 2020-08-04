@@ -7,6 +7,7 @@ Created on Mon Jul 13 13:06:38 2020
 import numpy as np
 import newt.qlm as qlm
 import newt.qlmACH as qlmA
+import newt.qlmNum as qlmN
 import newt.bigQlm as bqlm
 import newt.bigQlmNum as bqlmn
 import newt.rotations as rot
@@ -203,7 +204,8 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                 theta *= np.pi/180
                 dens = float(lines[3+k].split(',')[0])*1000
                 qlmWrk = qlmA.platehole(LMax, dens, t, r, theta)
-                qlmWrk = rot.rotate_qlm(qlmWrk, 0, theta, 0)
+                #qlmWrk = qlmN.platehole(LMax, dens, t, r, theta)
+                #qlmWrk = rot.rotate_qlm(qlmWrk, 0, theta, 0)
                 pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
                 if (pos == 0).all() and ('add' in lines[2+k]):

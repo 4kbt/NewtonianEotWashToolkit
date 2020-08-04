@@ -282,24 +282,20 @@ def transl_newt_z_RR_recurs2(LMax, dr):
     """
     # Descending array of lp from LMax through 0
     lp = np.arange(LMax+1)
-    rows = (-dr)**lp/sp.factorial(lp)
-    cols = [rows[0], *np.zeros(LMax)]
+    cols = (-dr)**lp/sp.factorial(lp)
+    rows = [cols[0], *np.zeros(LMax)]
     rrms = []
-    fac = alphanm(lp, 0)
-    fac2 = np.outer(1/fac, fac)
-    rrms.append(sla.toeplitz(rows, cols)*fac2)
-    # Each m has a matrix that is (LMax-|m|)x(LMax-|m|) in size
-    for m in range(1, LMax+1):
+    for m in range(LMax+1):
         fac = alphanm(lp[m:], m)
         fac2 = np.outer(1/fac, fac)
-        rrm = sla.toeplitz(rows[:-m], cols[:-m])*fac2
+        rrm = sla.toeplitz(cols[:LMax+1-m], rows[:LMax+1-m])*fac2
         rrms.append(rrm)
     return rrms
 
 
 def transl_newt_z_SS_recurs2(LMax, dr):
     """
-    Translate coaxially from regular to regular, Gumerov and Duraiswami. In a
+    Translate coaxially from singular to singular, Gumerov and Duraiswami. In a
     slight contradiction to the paper, our choice of normalization (alpha_n^m)
     does not require all three normalization factors in the translation matrix,
     see eqn 19.
@@ -316,26 +312,21 @@ def transl_newt_z_SS_recurs2(LMax, dr):
 
     http://legacydirs.umiacs.umd.edu/~gumerov/PDFs/cs-tr-4701.pdf
     """
-    # Descending array of lp from LMax through 0
     lp = np.arange(LMax+1)
     rows = (-dr)**lp/sp.factorial(lp)
     cols = [rows[0], *np.zeros(LMax)]
     ssms = []
-    fac = betanm(lp, 0)
-    fac2 = np.outer(1/fac, fac)
-    ssms.append((sla.toeplitz(cols, rows)*fac2))
-    # Each m has a matrix that is (LMax-|m|)x(LMax-|m|) in size
-    for m in range(1, LMax+1):
+    for m in range(LMax+1):
         fac = betanm(lp[m:], m)
         fac2 = np.outer(1/fac, fac)
-        ssm = sla.toeplitz(cols[:-m], rows[:-m])*fac2
+        ssm = sla.toeplitz(cols[:LMax+1-m], rows[:LMax+1-m])*fac2
         ssms.append(ssm)
     return ssms
 
 
 def transl_newt_z_SR_recurs2(LMax, dr):
     """
-    Translate coaxially from regular to regular, Gumerov and Duraiswami. In a
+    Translate coaxially from regular to singular, Gumerov and Duraiswami. In a
     slight contradiction to the paper, our choice of normalization (alpha_n^m)
     does not require all three normalization factors in the translation matrix,
     see eqn 19.
@@ -352,20 +343,10 @@ def transl_newt_z_SR_recurs2(LMax, dr):
 
     http://legacydirs.umiacs.umd.edu/~gumerov/PDFs/cs-tr-4701.pdf
     """
-    # Descending array of lp from LMax through 0
-    #lp = np.arange(LMax+1)
-    #lp2 = np.arange(LMax, 2*LMax+1)
     lp = np.arange(2*LMax+1)
     svals = sp.factorial(lp)/dr**(lp+1)
-    cols = svals[:LMax+1]
-    rows = svals[LMax:]
     srms = []
-    faca = alphanm(lp[:LMax+1], 0)
-    facb = betanm(lp[:LMax+1], 0)
-    fac2 = np.outer(1/facb, faca)
-    srms.append((sla.hankel(cols, rows)*fac2))
-    # Each m has a matrix that is (LMax-|m|)x(LMax-|m|) in size
-    for m in range(1, LMax+1):
+    for m in range(LMax+1):
         faca = alphanm(lp[m:LMax+1], m)
         facb = betanm(lp[m:LMax+1], m)
         fac2 = np.outer(1/facb, faca)

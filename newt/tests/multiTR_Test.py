@@ -8,6 +8,7 @@ import numpy as np
 import newt.glib as glb
 import newt.pg2Multi as pgm
 import newt.translations as trs
+import newt.translationRecurs as trr
 import newt.rotations as rot
 
 
@@ -156,3 +157,72 @@ def test_rotateA2():
     qm1b = pgm.qmoments(10, glb.rotate_point_array(m1, alpha, [0, 0, 1]))
     qm1c = rot.rotate_qlm(qm1, alpha, 0, 0)
     assert (abs(qm1c-qm1b) < 20*np.finfo(float).eps).all()
+
+
+def test_rotateAB():
+    d = 1
+    m = 1
+    m1 = np.array([[m, d, 0, 0]])
+    qm1 = pgm.qmoments(10, m1)
+    alpha = -np.pi/4
+    beta = np.pi/4
+    # Rotate around z first by alpha
+    m2 = glb.rotate_point_array(m1, alpha, [0, 0, 1])
+    # Rotate around y second by beta and get new moments
+    qm1b = pgm.qmoments(10, glb.rotate_point_array(m2, beta, [0, 1, 0]))
+    qm1c = rot.rotate_qlm(qm1, 0, beta, alpha)
+    assert (abs(qm1c-qm1b) < 20*np.finfo(float).eps).all()
+
+
+def test_q2q_RR():
+    """
+    Check that the inner to inner translate method matches EGA translation.
+    """
+    d = 1
+    m = 1
+    m1 = np.array([[m, d, 0, 0], [m, -d, 0, 0]])
+    # Find inner moments around origin
+    qm1 = pgm.qmoments(10, m1)
+    # Find inner moments if translated by [.1, 0, 0]
+    qm1p = pgm.qmoments(10, glb.translate_point_array(m1, [0, 0, 0.1]))
+    # Find moments translated by [.1, 0, 0]
+    rrms = trr.transl_newt_z_RR_recurs2(10, .1)
+    qlmp = trr.apply_trans_mat(qm1, rrms)
+    assert (abs(qlmp-qm1p) < 11*np.finfo(float).eps).all()
+
+
+def test_Q2Q_SS():
+    """
+    Check that the outer to outer translate method matches CS translation.
+    """
+    R = 100
+    M = 1
+    m2 = np.array([[M, R, 0, 0], [M, -R, 0, 0]])
+    # Get outer moments of points at +/-R
+    Qm2 = pgm.Qmomentsb(10, m2)
+    # Get outer moments of translated points
+    Qm2b = pgm.Qmomentsb(10, glb.translate_point_array(m2, [0, 0, 0.1]))
+    # Find outer moments from inner qm0 and qm0b translated to +/-R
+    ssms = trr.transl_newt_z_SS_recurs2(10, .1)
+    Qlmp2 = trr.apply_trans_mat(Qm2, ssms)
+    assert (abs(Qlmp2-Qm2b) < 10*np.finfo(float).eps).all()
+
+
+def test_q2Q_SR():
+    """
+    Check that the inner to outer translate method matches PointGravity.
+    """
+    d = 1
+    R = 100
+    m, M = 1, 1
+    dr = R-d
+    m1 = np.array([[m, d, 0, 0], [m, -d, 0, 0]])
+    m2 = glb.translate_point_array(m1, [0, 0, R])
+    # Create inner moments of each points at +/-r
+    qm0 = pgm.qmoments(10, np.array(m1))
+    # Get outer moments of points at +/-R
+    Qm2 = pgm.Qmomentsb(10, m2)
+    # Find outer moments from inner qm0 and qm0b translated to +/-R
+    srms = trr.transl_newt_z_SR_recurs2(10, R)
+    Qlm = trr.apply_trans_mat(qm0, srms)
+    assert (abs(Qlm-Qm2) < 11*np.finfo(float).eps).all()
