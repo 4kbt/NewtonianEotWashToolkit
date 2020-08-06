@@ -1,0 +1,14 @@
+test part cylinder                                                    
+nsteps 24
+cmin
+create cylinder red
+0,3.00000,1.50000,-60,60
+1.0
+0,0,0
+add
+create triangle red
+1.50000,-2.59809,2.59809,1.50000
+-1.0
+0,0,0
+add
+end

@@ -179,9 +179,44 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     print('translated ', shape)
                     qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'trapezoid':
-                qlmTot += 0
+                line2 = [float(val)*fac for val in lines[2+k].split(',')]
+                w1, w2, h, t = line2
+                dens = float(lines[3+k].split(',')[0])*1000
+                y1, y2 = w1/2, w2/2
+                hs = w1*h/(w2-w1)
+                hb = h + hs
+                massTrib = dens*t*w2*hb/2
+                massTris = dens*t*w1*hs/2
+                qlmWrk = qlm.tri_iso_prism(LMax, massTris, t, w1, hs, 0)
+                qlmWrk -= qlm.tri_iso_prism2(LMax, massTrib, t, w2, hb, 0)
+                qlmWrk = trs.translate_qlm(qlmWrk, [-hs, 0, 0], LMax)
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
+                k += 3
+                if (pos == 0).all() and ('add' in lines[2+k]):
+                    k += 1
+                    print('added ', shape)
+                    qlmTot += qlmWrk
+                else:
+                    print('translated ', shape)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'partcylinder':
-                qlmTot += 0
+                line2 = [float(val)*fac for val in lines[2+k].split(',')]
+                r, d, h = line2
+                dens = float(lines[3+k].split(',')[0])*1000
+                phih = np.arccos(d/r)
+                massCyl = dens*h*phih*r**2
+                massTri = dens*h*d*r*np.sin(phih)
+                qlmWrk = qlm.annulus(LMax, massCyl, h, 0, r, 0, phih)
+                qlmWrk -= qlm.tri_iso_prism2(LMax, massTri, h, r, 0, phih)
+                pos = np.array(lines[4+k].split(','), dtype=float)*fac
+                k += 3
+                if (pos == 0).all() and ('add' in lines[2+k]):
+                    k += 1
+                    print('added ', shape)
+                    qlmTot += qlmWrk
+                else:
+                    print('translated ', shape)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
             elif shape == 'tetrahedron':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 x, y, z = line2
@@ -204,8 +239,8 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                 theta *= np.pi/180
                 dens = float(lines[3+k].split(',')[0])*1000
                 qlmWrk = qlmA.platehole(LMax, dens, t, r, theta)
-                #qlmWrk = qlmN.platehole(LMax, dens, t, r, theta)
-                #qlmWrk = rot.rotate_qlm(qlmWrk, 0, theta, 0)
+                # qlmWrk = qlmN.platehole(LMax, dens, t, r, theta)
+                # qlmWrk = rot.rotate_qlm(qlmWrk, 0, theta, 0)
                 pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
                 if (pos == 0).all() and ('add' in lines[2+k]):
@@ -219,7 +254,8 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 r, R = line2
                 dens = float(lines[3+k].split(',')[0])*1000
-                qlmWrk = qlmA.cylhole(LMax, dens, r, R)
+                qlmWrk = qlmN.steinmetz(LMax, dens, r, R)
+                qlmWrk = rot.rotate_qlm(qlmWrk, np.pi/2, 0, 0)
                 pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
                 if (pos == 0).all() and ('add' in lines[2+k]):

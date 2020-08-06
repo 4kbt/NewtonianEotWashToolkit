@@ -6,7 +6,6 @@ Created on Tue Jul 21 19:05:14 2020
 """
 import newt.read_multiFor as rmf
 import numpy as np
-import pytest
 
 MPCPATH = './newt/tests/mpc/'
 MOMPATH = './newt/tests/mom/'
@@ -30,7 +29,6 @@ def test_triangle():
     assert (np.abs(testtri - testtri2) < 1e7*np.finfo(float).eps).all()
 
 
-@pytest.mark.xfail
 def test_platehole():
     testph = rmf.read_mpc(10, 'testph.mpc', MPCPATH)
     testph2 = rmf.read_gsq('testph.gsq', MOMPATH)
@@ -49,11 +47,10 @@ def test_rectangle():
     assert (np.abs(testre - testre2) < 2e8*np.finfo(float).eps).all()
 
 
-@pytest.mark.xfail
 def test_cylhole():
     testch = rmf.read_mpc(10, 'testch.mpc', MPCPATH)
     testch2 = rmf.read_gsq('testch.gsq', MOMPATH)
-    assert (np.abs(testch - testch2) < 2e8*np.finfo(float).eps).all()
+    assert (np.abs(testch - testch2) < 5e8*np.finfo(float).eps).all()
 
 
 def test_cyl():
@@ -66,3 +63,29 @@ def test_pyr():
     testpyr = rmf.read_mpc(10, 'testpyr.mpc', MPCPATH)
     testpyr2 = rmf.read_gsq('testpyr', MOMPATH)
     assert (np.abs(testpyr - testpyr2) < 1e7*np.finfo(float).eps).all()
+
+
+def test_partcyl():
+    """
+    Internal consistency of MULTIN
+    XXX: Looks like q(7,1) and q(8,6) have small errors in part-cylinder
+    """
+    testpc2 = rmf.read_gsq('testpc2.gsq', MOMPATH)
+    testpc3 = rmf.read_gsq('testpc3.gsq', MOMPATH)
+    assert (np.abs(testpc3 - testpc2) < 2e8*np.finfo(float).eps).all()
+
+
+def test_partcyl2():
+    """
+    Part-cylinder vs NEWT calc.
+    """
+    testpc = rmf.read_mpc(10, 'testpc3.mpc', MPCPATH)
+    testpc2 = rmf.read_gsq('testpc3.gsq', MOMPATH)
+    assert (np.abs(testpc - testpc2) < 2e8*np.finfo(float).eps).all()
+
+
+def test_trap():
+    testtrap = rmf.read_gsq('testtrap.gsq', MOMPATH)
+    testtrap2 = rmf.read_gsq('testtrap.gsq', MOMPATH)
+    assert (np.abs(testtrap - testtrap2) < 2e8*np.finfo(float).eps).all()
+

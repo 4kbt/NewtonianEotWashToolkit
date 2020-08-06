@@ -1,0 +1,9 @@
+test part cylinder                                                    
+nsteps 24
+cmin
+create partcylinder red
+3.00000,1.50000,1.50000
+1.0
+0,0,0
+add
+end

@@ -449,6 +449,71 @@ def cylhole(LMax, rho, r, R):
     return qlm
 
 
+def cylhole2(LMax, rho, r, R):
+    """
+    The shape consists of the volume that would be removed by drilling a hole
+    of radius r into a cylinder of radius R. The symmetry axis of the hole is
+    along zhat, and the cylinder has its symmetry axis along yhat. The moments
+    require the complete elliptic integrals of the first and second kinds.
+    Moments out to LMax=5.
+
+    Inputs
+    ------
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
+    rho : float
+        Density in kg/m^3
+    r : float
+        Radius of smaller cylinder hole
+    R : float
+        Radius of larger cylinder
+
+    Returns
+    -------
+    qlm : ndarray
+        (LMax+1)x(2LMax+1) complex array of inner moments
+    """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
+    qlm = np.zeros([L+1, 2*L+1], dtype='complex')
+    if (r <= 0) or (R < r):
+        return qlm
+    k = r/R
+    if k == 1:
+        Ek = 1
+        Kk = 0      # This handles the limit of r==R, since (R^2-r^2)K(1) -> 0
+    else:
+        Ek = sp.ellipe(k**2)
+        Kk = sp.ellipk(k**2)
+    qlm[0, L] = rho*4/3*R**3*((1+k**2)*Ek - (1-k**2)*Kk)/np.sqrt(np.pi)
+    qlm[2, L] = rho*2*R**5/(9*np.sqrt(5*np.pi))
+    qlm[2, L] *= ((2 + 13*k**2-13*k**4)*Ek - (1-k**2)*(2-k**2)*Kk)
+    q22 = ((8-13*k**2+3*k**4)*Ek - (1-k**2)*(8-9*k**2)*Kk)
+    qlm[2, L+2] = rho*q22*R**5*np.sqrt(2/(15*np.pi))/3
+    q40 = (24+440*k**2-1415*k**4+689*k**6)*Ek
+    q40 -= (1-k**2)*(24+32*k**2-187*k**4)*Kk
+    qlm[4, L] = rho*R**7/(350*np.sqrt(np.pi))*q40
+    q42 = (48-198*k**2+173*k**4-85*k**6)*Ek
+    q42 -= (1-k**2)*(48-174*k**2+95*k**4)*Kk
+    qlm[4, L+2] = rho*q42*R**7/(35*np.sqrt(10*np.pi))
+    q44 = (128-248*k**2+123*k**4-5*k**6)*Ek
+    q44 -= (1-k**2)*(128-184*k**2+55*k**4)*Kk
+    qlm[4, L+4] = rho*q44*R**7/(10*np.sqrt(70*np.pi))
+
+    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
+    ms = np.arange(-L, L+1)
+    mfac = (-1)**(np.abs(ms))
+    qlm += np.conj(np.fliplr(qlm))*mfac
+    qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
+    return qlm
+
+
 def platehole(LMax, rho, t, r, theta):
     """
     This shape consists of the volume that would be removed by drilling a hole
