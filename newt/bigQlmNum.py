@@ -63,11 +63,11 @@ def annulus(L, dens, h1, h2, IR, OR, phih):
         (LMax+1)x(2LMax+1) complex array of outer moments
     """
     Qlmb = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (h1 > h2) or (OR < IR) or (phih == 0) or (OR <= 0):
-        return Qlmb
+    if (h1 > h2) or (OR < IR) or (phih <= 0) or (OR <= 0) or (phih > np.pi):
+        raise ValueError('Unphysical parameter arguments')
     # Make sure this solid doesn't reach the origin
-    if (h1 <= 0 <= h2) and (IR == 0):
-        return Qlmb
+    if (h1 <= 0 <= h2) and (IR <= 0):
+        raise ValueError('Unphysical parameter arguments')
     for l in range(L+1):
         for m in range(l+1):
             Qlmb[l, m+L], err = intg.tplquad(cyl_integrand_Qlmb, -phih, phih,
@@ -117,8 +117,8 @@ def outer_cone(L, dens, H, IR, OR, phih):
         (LMax+1)x(2LMax+1) complex array of outer moments
     """
     Qlmb = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (H <= 0) or (OR < IR) or (phih == 0) or (OR <= 0):
-        return Qlmb
+    if (H <= 0) or (OR < IR) or (phih <= 0) or (OR <= 0) or (phih > np.pi):
+        raise ValueError('Unphysical parameter arguments')
 
     def cone_z(theta, r):
         """Boundary integral for z coordinate of cone"""
@@ -175,11 +175,11 @@ def trapezoid(L, dens, h1, h2, IR, OR, phih):
         (LMax+1)x(2LMax+1) complex array of outer moments
     """
     Qlmb = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (h1 > h2) or (OR < IR) or (phih == 0) or (OR <= 0):
-        return Qlmb
+    if (h1 > h2) or (OR < IR) or (phih <= 0) or (OR <= 0):
+        raise ValueError('Unphysical parameter arguments')
     # Make sure this solid doesn't reach the origin
-    if ((h1 <= 0 <= h2) and (IR == 0)) or (phih >= np.pi/2):
-        return Qlmb
+    if ((h1 <= 0 <= h2) and (IR <= 0)) or (phih >= np.pi/2):
+        raise ValueError('Unphysical parameter arguments')
 
     def trap_or(theta):
         """Boundary integral for r coordinate of trapezoid"""

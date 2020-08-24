@@ -38,7 +38,7 @@ def rect_prism(LMax, rho, x, y, z):
         L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (z <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     q00 = rho*x*y*z/np.sqrt(4*np.pi)
     r2 = x**2 + y**2
     d2 = x**2 - y**2
@@ -80,9 +80,9 @@ def annulus(LMax, rho, H, Ri, Ro, phic, phih):
     Ro : float
         Outer radius of annulus
     phic : float
-        Central angle of annular section
+        Central angle of annular section, in radians
     phih : float
-        Half angular width of annular section
+        Half angular width of annular section, in radians
 
 
     Returns
@@ -94,13 +94,12 @@ def annulus(LMax, rho, H, Ri, Ro, phic, phih):
         L = 5
     else:
         L = LMax
-    phih = phih % (2*np.pi)
     dphi = phih*2
     dr = Ro-Ri
     r = (Ro+Ri)/2
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (Ro <= Ri) or (Ro <= 0) or (H <= 0) or (phih > np.pi):
-        return qlm
+    if (Ro <= Ri) or (Ro <= 0) or (H <= 0) or (phih > np.pi) or (phih <= 0):
+        raise ValueError('Unphysical parameter arguments')
     eiphi = np.exp(-1j*phic)
     sdphih = np.sin(dphi/2)
     sdphi3h = np.sin(dphi*3/2)
@@ -177,8 +176,8 @@ def cone(LMax, rho, h, r1, r2):
     else:
         L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (h <= 0):
-        return qlm
+    if (h <= 0) or ((r1 == 0) and (r2 == 0)):
+        raise ValueError('Unphysical parameter arguments')
     fac = rho*np.sqrt(np.pi)
     qlm[0, L] = fac*h*(r1**2 + r1*r2 + r2**2)/6
     # qlm[1, L] = fac*h**2*(r1**2 + 2*r1*r2 + 3*r2**2)/(8*np.sqrt(3))
@@ -258,8 +257,8 @@ def tri_prism(LMax, rho, h, d, y1, y2):
     else:
         L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (h <= 0):
-        return qlm
+    if (h <= 0) or (d == 0) or (y1 == y2):
+        raise ValueError('Unphysical parameter arguments')
     y2p = (y1**2+y1*y2+y2**2)
     y4p = (y1**4+y1**3*y2+y1**2*y2**2+y1*y2**3+y2**4)
     y5p = (y1**5+y1**4*y2+y1**3*y2**2+y1**2*y2**3+y1*y2**4+y2**5)
@@ -343,7 +342,7 @@ def tetrahedron(LMax, rho, x, y, z):
         L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (z <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     q00 = rho*x*y*z/(6*np.sqrt(4*np.pi))
     qlm[0, L] = q00
     qlm[1, L] = q00*z*np.sqrt(3)/4
@@ -421,7 +420,7 @@ def cylhole(LMax, rho, r, R):
         L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (r <= 0) or (R < r):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     fac = rho*np.sqrt(np.pi)*r*R
     x = (r/R)**2
     Fc2 = sp.hyp2f1(-.5, .5, 2, x)
@@ -479,7 +478,7 @@ def cylhole2(LMax, rho, r, R):
         L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (r <= 0) or (R < r):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     k = r/R
     if k == 1:
         Ek = 1
@@ -547,7 +546,7 @@ def platehole(LMax, rho, t, r, theta):
         L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (r <= 0) or (t <= 0) or (abs(theta) > np.pi/2):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     s = np.tan(theta)
     q00 = rho*t*r**2*np.sqrt(np.pi*(1+s**2))/2
     qlm[0, L] = q00
@@ -607,7 +606,7 @@ def pyramid(LMax, rho, h, x, y):
         L = LMax
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (h <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     q00 = rho*h*x*y/(6*np.sqrt(np.pi))
     qlm[0, L] = q00
     qlm[1, L] = q00*h*np.sqrt(3)/4

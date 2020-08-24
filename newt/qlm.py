@@ -63,8 +63,8 @@ def cylinder(L, mass, H, R):
     Slk = np.zeros([L+1, L//2+1])
     Slk[0, 0] = 1.0
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (H == 0) or (R == 0):
-        return qlm
+    if (H <= 0) or (R <= 0):
+        raise ValueError('H or R <= 0')
     qlm[0, L] = factor*Slk[0, 0]
     for l in range(2, L+1, 2):
         Slk[l, 0] = (l-1)*H**2/(4.0*(l+1))*Slk[l-2, 0]
@@ -94,9 +94,9 @@ def annulus(L, mass, H, Ri, Ro, phic, phih):
     Ro : float
         Outer radius of the annular section
     phic : float
-        Average angle of annular section
+        Average angle of annular section, in radians
     phih : float
-        Half of the total angular span of the annular section
+        Half of the total angular span of the annular section, in radians
 
     Returns
     -------
@@ -105,9 +105,8 @@ def annulus(L, mass, H, Ri, Ro, phic, phih):
     """
     factor = mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    phih = phih % (2*np.pi)
-    if (H == 0) or (Ro < Ri) or (phih == 0) or (phih > np.pi):
-        return qlm
+    if (H <= 0) or (Ro < Ri) or (phih <= 0) or (phih > np.pi) or (Ri < 0):
+        raise ValueError('Unphysical parameter arguments')
     rfac = Ro**2 - Ri**2
     for l in range(L+1):
         fac = factor*np.sqrt(2*l+1)
@@ -151,9 +150,9 @@ def cone(L, mass, P, R, phic, phih):
     R : float
         Radius of the base of the cone section
     phic : float
-        Average angle of cone section
+        Average angle of cone section, in radians
     phih : float
-        Half of the total angular span of the cone section
+        Half of the total angular span of the cone section, in radians
 
     Returns
     -------
@@ -162,9 +161,8 @@ def cone(L, mass, P, R, phic, phih):
     """
     factor = 3*mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    phih = phih % (2*np.pi)
-    if (P == 0) or (R == 0) or (phih == 0) or (phih > np.pi):
-        return qlm
+    if (P <= 0) or (R <= 0) or (phih <= 0) or (phih > np.pi):
+        raise ValueError('Unphysical parameter arguments')
     for l in range(L+1):
         fac = factor*np.sqrt(2*l+1)/np.exp(sp.gammaln(l+4))
         for m in range(l+1):
@@ -192,6 +190,8 @@ def tri_iso_prism(L, mass, H, a, d, phic):
     the xy-plane by H/2. The triangular faces have vertices at (x,y)=(0,0),
     (d,a/2), and (d,-a/2) when phic=0.
 
+    XXX: Check if d<0 matches expectation
+
     Inputs
     ------
     L : int
@@ -205,7 +205,7 @@ def tri_iso_prism(L, mass, H, a, d, phic):
     d : float
         Distance to the side opposite the origin
     phic : float
-        Average angle of prism
+        Average angle of prism, in radians
 
     Returns
     -------
@@ -214,8 +214,8 @@ def tri_iso_prism(L, mass, H, a, d, phic):
     """
     factor = mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (H == 0) or (d == 0) or (a == 0):
-        return qlm
+    if (H <= 0) or (d == 0) or (a <= 0):
+        raise ValueError('Unphysical parameter arguments')
     aod = a/(2*d)
     for l in range(L+1):
         fac = factor*np.sqrt(2*l+1)/2**(l-1)
@@ -264,9 +264,9 @@ def tri_iso_prism2(L, mass, H, R, phic, phih):
     R : float
         Length of equal length sides of triangular face
     phic : float
-        Average angle of prism
+        Average angle of prism, in radians
     phih : float
-        Half of the total angular span of the prism
+        Half of the total angular span of the prism, in radians
 
     Returns
     -------
@@ -275,9 +275,8 @@ def tri_iso_prism2(L, mass, H, R, phic, phih):
     """
     factor = mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    phih = phih % (2*np.pi)
-    if (H == 0) or (R == 0) or (phih == 0) or (phih > np.pi/2):
-        return qlm
+    if (H <= 0) or (R <= 0) or (phih <= 0) or (phih > np.pi/2):
+        raise ValueError('Unphysical parameter arguments')
     d = R*np.cos(phih)
     a = np.tan(phih)
     for l in range(L+1):
@@ -316,6 +315,8 @@ def tri_prism(L, mass, H, d, y1, y2):
     xy-plane by H/2. The triangular faces have vertices at (x,y)=(0,0),
     (d,y1), and (d,y2).
 
+    XXX: Check d<0 matches expectation
+
     Inputs
     ------
     L : int
@@ -330,8 +331,6 @@ def tri_prism(L, mass, H, d, y1, y2):
         Y-position of first vertex
     y2 : float
         Y-position of second vertex
-    phic : float
-        Average angle of prism
 
     Returns
     -------
@@ -340,8 +339,8 @@ def tri_prism(L, mass, H, d, y1, y2):
     """
     factor = mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (H == 0) or (d <= 0) or (y1 == y2):
-        return qlm
+    if (H <= 0) or (d == 0) or (y1 == y2):
+        raise ValueError('Unphysical parameter arguments')
 
     for l in range(L+1):
         fac = factor*np.sqrt(2*l+1)/2**(l-1)
@@ -392,7 +391,7 @@ def rect_prism(L, mass, H, a, b, phic):
     b : float
         Width of prism
     phic : float
-        Average angle of prism
+        Average angle of prism, in radians
 
     Returns
     -------
@@ -402,7 +401,7 @@ def rect_prism(L, mass, H, a, b, phic):
     factor = mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (H <= 0) or (b <= 0) or (a <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     # l-m even, m even -> l even
     for l in range(0, L+1, 2):
         fac = factor*np.sqrt(2*l+1)
@@ -452,7 +451,7 @@ def ngon_prism(L, mass, H, a, phic, N):
     a : float
         Length of sides of prism
     phic : float
-        Average angle of prism
+        Average angle of prism, in radians
     N : int
         Number of sides to regular prism
 
@@ -463,8 +462,8 @@ def ngon_prism(L, mass, H, a, phic, N):
     """
     factor = mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (H == 0) or (a == 0) or (N <= 0):
-        return qlm
+    if (H <= 0) or (a <= 0) or (N <= 0):
+        raise ValueError('Unphysical parameter arguments')
     tanN = np.tan(np.pi/N)
     for l in range(L+1):
         fac = factor*np.sqrt(2*l+1)
@@ -525,7 +524,7 @@ def tetrahedron(L, mass, x, y, z):
     factor = 6*mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (z <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
 
     for l in range(L+1):
         fac = factor*np.sqrt(2*l+1)/np.exp(sp.gammaln(l+4))
@@ -559,7 +558,7 @@ def tetrahedron(L, mass, x, y, z):
 
 def tetrahedron2(L, mass, x, y1, y2, z):
     """
-    A tetrahedron with vertices at (x,y,z) = (0,0,0), (x,y1,0), (x,y2,0), and
+    A tetrahedron with vertices at (x,y,z) = (x,y1,0), (x,y2,0), (0,0,0), and
     (0,0,z).
 
     Inputs
@@ -569,11 +568,11 @@ def tetrahedron2(L, mass, x, y1, y2, z):
     mass : float
         Mass of the tetrahedron
     x : float
-        Distance to vertex along x-axis
+        X-position of first and second vertices
     y1 : float
-        Distance to vertex along y-axis
+        Y-position of first vertex
     y2 : float
-        Distance to vertex along y-axis
+        Y-position of second vertex
     z : float
         Distance to vertex along z-axis
 
@@ -585,7 +584,7 @@ def tetrahedron2(L, mass, x, y1, y2, z):
     factor = 6*mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y1 == y2) or (z <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
 
     for l in range(L+1):
         fac = factor*np.sqrt(2*l+1)/np.exp(sp.gammaln(l+4))/(y2-y1)
@@ -644,7 +643,7 @@ def pyramid(L, mass, x, y, z):
     factor = 3*mass*np.sqrt(1/(4.*np.pi))
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (x <= 0) or (y <= 0) or (z <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
 
     for l in range(L+1):
         fac = factor*np.sqrt(2*l+1)/np.exp(sp.gammaln(l+4))
