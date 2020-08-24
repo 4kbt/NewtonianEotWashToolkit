@@ -18,6 +18,18 @@ def read_gsq(filename, filepath='C:\\mom\\'):
     """
     Read an inner multipole moment file generated with MULTIN. Takes an
     optional filepath assumed to be 'C:\\mom\\' as typical for MULTIN.
+
+    Inputs
+    ------
+    filename : str
+        Name of .gsq file (with or without extension)
+    filepath : str, optional
+        Directory containing .gsq file, assumed 'C:\\mom\\' in MULTIN
+
+    Returns
+    -------
+    qlm : ndarray, complex
+        Complex (LMax+1)x(2LMax + 1) array of inner multipole coefficients
     """
     if not filename.endswith('.gsq'):
         filename += '.gsq'
@@ -50,6 +62,18 @@ def read_gbq(filename, filepath='C:\\mom\\'):
     """
     Read an outer multipole moment file generated with MULTIN. Takes an
     optional filepath assumed to be 'C:\\mom\\' as typical for MULTIN.
+
+    Inputs
+    ------
+    filename : str
+        Name of .gbq file (with or without extension)
+    filepath : str, optional
+        Directory containing .gbq file, assumed 'C:\\mom\\' in MULTIN
+
+    Returns
+    -------
+    Qlmb : ndarray, complex
+        Complex (LMax+1)x(2LMax + 1) array of outer multipole coefficients
     """
     if not filename.endswith('.gbq'):
         filename += '.gbq'
@@ -84,13 +108,23 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
     moments stored in memory. One is the sum of all the previous moments
     (total) and the other is the current shape (working) being manipulated. The
     working shape can be rotated, translated, and added to total sequentially
-    many times. This function does not allow the use of 'load', 'gettotal', or
-    'puttotal' statements currently. Takes an optional filepath which is
-    assumed to be the standard filepath for MULTIN, 'C:\\mpc\\'.
+    many times. This function does not allow the use of 'recall', 'store',
+    'rescale', or 'save' statements currently. Takes an optional filepath which
+    is assumed to be the standard filepath for MULTIN, 'C:\\mpc\\'.
 
-    To Do
-    -----
-    Cone, trapezoid, partcylinder
+    Inputs
+    ------
+    LMax : int
+        Highest degree inner multipole moments to compute
+    filename : str
+        Name of .mpc file (with or without extension)
+    filepath : str, optional
+        Directory containing .mpc file, assumed 'C:\\mpc\\' in MULTIN
+
+    Returns
+    -------
+    qlmTot : ndarray, complex
+        Complex (LMax+1)x(2LMax + 1) array of inner multipole coefficients
     """
     if not filename.endswith('.mpc'):
         filename += '.mpc'
@@ -131,7 +165,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'sphere':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 r = line2[0]
@@ -146,7 +180,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'cone':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 LR, UR, H = line2
@@ -162,7 +196,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'triangle':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 d, y1, y2, t = line2
@@ -177,7 +211,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'trapezoid':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 w1, w2, h, t = line2
@@ -189,7 +223,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                 massTris = dens*t*w1*hs/2
                 qlmWrk = qlm.tri_iso_prism(LMax, massTris, t, w1, hs, 0)
                 qlmWrk -= qlm.tri_iso_prism2(LMax, massTrib, t, w2, hb, 0)
-                qlmWrk = trs.translate_qlm(qlmWrk, [-hs, 0, 0], LMax)
+                qlmWrk = trs.translate_qlm(qlmWrk, [-hs, 0, 0])
                 pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
                 if (pos == 0).all() and ('add' in lines[2+k]):
@@ -198,7 +232,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'partcylinder':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 r, d, h = line2
@@ -216,7 +250,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'tetrahedron':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 x, y, z = line2
@@ -231,7 +265,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'platehole':
                 line2 = [float(val) for val in lines[2+k].split(',')]
                 r, t, theta = line2
@@ -249,7 +283,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'cylhole':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 r, R = line2
@@ -264,7 +298,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'pyramid':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 x, y, z = line2
@@ -279,7 +313,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             elif shape == 'rectangle':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 x, y, z = line2
@@ -294,7 +328,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
                     qlmTot += qlmWrk
                 else:
                     print('translated ', shape)
-                    qlmWrk = trs.translate_qlm(qlmWrk, pos, LMax)
+                    qlmWrk = trs.translate_qlm(qlmWrk, pos)
             else:
                 print(shape, ' does not have a known set of moments')
                 for n in range(nlines-k):
@@ -313,7 +347,7 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
             print('translated ', shape)
             dr = np.array(line.split('translate')[1].split(','), dtype=float)
             dr *= fac
-            qlmWrk = trs.translate_qlm(qlmWrk, dr, LMax)
+            qlmWrk = trs.translate_qlm(qlmWrk, dr)
         elif 'add' in line:
             print('added ', shape)
             qlmTot += qlmWrk
@@ -325,6 +359,23 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
             fac = 25.4e-3
         elif 'nsteps' in line:
             nsteps = line.split()[-1]
+        elif 'load' in line:
+            fname = line.split('load ')[1]
+            fname = fname.strip()
+            print(fname)
+            qlmLoad = read_gsq(fname, filepath.replace('mpc', 'mom'))
+            if np.shape(qlmLoad) != np.shape(qlmWrk):
+                raise TypeError('Loaded part '+fname+' has wrong LMax')
+            qlmWrk = qlmLoad
+            shape = fname
+        elif 'zeroqlm' in line:
+            qlmTot *= 0
+        elif 'gettotal' in line:
+            qlmWrk = np.copy(qlmTot)
+            shape = 'Total'
+        elif 'puttotal' in line:
+            qlmTot = np.copy(qlmWrk)
+            shape = 'Working'
         elif 'end' in line:
             print('end')
             break
