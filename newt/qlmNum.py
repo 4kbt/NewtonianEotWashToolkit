@@ -82,7 +82,7 @@ def cyl_mom(L, dens, phih, IR, OR, h1, h2):
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (h1 > h2) or (OR < IR) or (phih == 0) or (OR <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     for l in range(L+1):
         for m in range(l+1):
             qlm[l, m+L], err = intg.tplquad(cyl_integrand_qlm, -phih, phih, IR,
@@ -136,7 +136,7 @@ def cone_mom(L, dens, phih, IR, OR, H):
         return H*(OR-r)/(OR-IR)
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (H <= 0) or (OR < IR) or (phih == 0) or (OR <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     for l in range(L+1):
         for m in range(l+1):
             qlm[l, m+L], err = intg.tplquad(cyl_integrand_qlm, -phih, phih, IR,
@@ -188,11 +188,11 @@ def trap_mom(L, dens, phih, IR, OR, h1, h2):
         (LMax+1)x(2LMax+1) complex array of inner moments
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
-    if (h1 > h2) or (OR < IR) or (phih == 0) or (OR <= 0):
-        return qlm
+    if (h1 > h2) or (OR < IR) or (phih <= 0) or (OR <= 0):
+        raise ValueError('Unphysical parameter arguments')
     # Make sure the angle makes sense
     if (phih >= np.pi/2):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
 
     def trap_or(theta):
         """Boundary integral for r coordinate of trapezoid"""
@@ -261,7 +261,7 @@ def steinmetz(L, dens, r, R):
 
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (r <= 0) or (R < r):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     for l in range(L+1):
         for m in range(l+1):
             qlm[l, m+L], err = intg.tplquad(cart_integrand_qlm_zyx, -r, r,
@@ -307,7 +307,7 @@ def platehole(L, dens, t, r, theta):
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     if (r <= 0) or (theta >= np.pi/2) or (t <= 0):
-        return qlm
+        raise ValueError('Unphysical parameter arguments')
     tanth = np.tan(theta)
     h = t/np.cos(theta)
 

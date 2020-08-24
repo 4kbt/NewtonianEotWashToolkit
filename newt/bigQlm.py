@@ -39,7 +39,7 @@ def sphere(LMax, dens, R, x, y, z):
     d = np.sqrt(x**2 + y**2 + z**2)
     if (d == 0):
         print('Outer multipole moments cannot be evaluated at the origin.')
-        return Qlmsb
+        raise ValueError('Unphysical parameter arguments')
     theta = np.arccos(z/d)
     phi = np.arctan2(y, x) % (2*np.pi)
     for n in range(LMax+1):
@@ -78,9 +78,9 @@ def annulus(LMax, dens, H, r0, r1, phic, phih):
     Ro : float
         Outer radius of annulus
     phic : float
-        Central angle of annular section
+        Central angle of annular section, in radians
     phih : float
-        Half angular width of annular section
+        Half angular width of annular section, in radians
 
 
     Returns
@@ -93,9 +93,8 @@ def annulus(LMax, dens, H, r0, r1, phic, phih):
     else:
         L = LMax
     Qlmb = np.zeros([L+1, 2*L+1], dtype='complex')
-    phih = phih % (2*np.pi)
-    if (H == 0) or (r1 < r0) or (r1 < 0) or (r0 < 0) or (phih == 0) or (phih > np.pi):
-        return Qlmb
+    if (H == 0) or (r1 < r0) or (r1 < 0) or (r0 < 0) or (phih <= 0) or (phih > np.pi):
+        raise ValueError('Unphysical parameter arguments')
     d1 = np.sqrt(H**2 + r1**2)
     d0 = np.sqrt(H**2 + r0**2)
     sH = np.sign(H)
