@@ -36,7 +36,7 @@ arctot = arc + arc2
 # create a test-mirror
 tm = qlm.cylinder(LMax, mtm, htm, rtm)
 tm = rot.rotate_qlm(tm, np.pi/2, np.pi/2, -np.pi/2)
-tm = trs.translate_q2Q(tm, [dx, dy, 0], LMax)
+tm = trs.translate_q2Q(tm, [dx, dy, 0])
 
 # Figure out the force at different rotor angles
 nAng = 120

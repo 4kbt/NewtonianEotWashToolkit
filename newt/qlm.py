@@ -190,7 +190,7 @@ def tri_iso_prism(L, mass, H, a, d, phic):
     """
     The isosceles triangular prism has a height H and extends above and below
     the xy-plane by H/2. The triangular faces have vertices at (x,y)=(0,0),
-    (d,a/2), and (d,-a/2).
+    (d,a/2), and (d,-a/2) when phic=0.
 
     Inputs
     ------
@@ -250,8 +250,8 @@ def tri_iso_prism(L, mass, H, a, d, phic):
 def tri_iso_prism2(L, mass, H, R, phic, phih):
     """
     The isosceles triangular prism has a height H and extends above and below
-    the xy-plane by H/2. The triangular faces span an angle of phih where the
-    equal length sides have length R.
+    the xy-plane by H/2. The triangular faces span an angle from phic-phih to
+    phic + phih where the equal length sides have length R.
 
     Inputs
     ------
@@ -500,10 +500,9 @@ def ngon_prism(L, mass, H, a, phic, N):
 
 def tetrahedron(L, mass, x, y, z):
     """
-    This shape consists of a tetrahedron having three mutually perpendicular
-    triangular faces that meet at the origin. The fourth triangular face is
-    defined by points at corrdinates x, y, and z along the xhat, yhat, and zhat
-    axes respectively.
+    A tetrahedron having three mutually perpendicular triangular faces that
+    meet at the origin. The fourth triangular face is defined by points at
+    coordinates x, y, and z along the xhat, yhat, and zhat axes respectively.
 
     Inputs
     ------
@@ -560,10 +559,8 @@ def tetrahedron(L, mass, x, y, z):
 
 def tetrahedron2(L, mass, x, y1, y2, z):
     """
-    This shape consists of a tetrahedron having three mutually perpendicular
-    triangular faces that meet at the origin. The fourth triangular face is
-    defined by points at corrdinates x, y, and z along the xhat, yhat, and zhat
-    axes respectively.
+    A tetrahedron with vertices at (x,y,z) = (0,0,0), (x,y1,0), (x,y2,0), and
+    (0,0,z).
 
     Inputs
     ------
@@ -574,6 +571,8 @@ def tetrahedron2(L, mass, x, y1, y2, z):
     x : float
         Distance to vertex along x-axis
     y1 : float
+        Distance to vertex along y-axis
+    y2 : float
         Distance to vertex along y-axis
     z : float
         Distance to vertex along z-axis
@@ -620,10 +619,9 @@ def tetrahedron2(L, mass, x, y1, y2, z):
 
 def pyramid(L, mass, x, y, z):
     """
-    This shape consists of a pyramid having three mutually perpendicular
-    triangular faces that meet at the origin. The fourth triangular face is
-    defined by points at corrdinates x, y, and z along the xhat, yhat, and zhat
-    axes respectively.
+    A rectangular pyramid extending above the xy-plane by a height z. The
+    rectangular base of the pyramid has vertices at (x,y) = (x, y), (x, -y),
+    (-x, y), and (-x, -y).
 
     Inputs
     ------
@@ -632,11 +630,11 @@ def pyramid(L, mass, x, y, z):
     mass : float
         Mass of the pyramid
     x : float
-        Distance to vertex along x-axis
-    y1 : float
-        Distance to vertex along y-axis
+        Half-length of rectangular base of pyramid
+    y : float
+        Half-width of rectangular base of pyramid
     z : float
-        Distance to vertex along z-axis
+        Height of pyramid
 
     Returns
     -------

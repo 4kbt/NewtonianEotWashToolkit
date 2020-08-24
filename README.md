@@ -65,6 +65,8 @@ compute the interactions in an entirely different and often useful perspective.
 Not only that, but it's WAY FASTER! This portion is based largely on the
 private program, MULTIN, of Prof. Adelberger.
 
+A list of shapes can be found [here](newt/docs/shapes.md)
+Information on multipole methods can be found [here](newt/docs/multipoles.md)
 Example calculations are explained [here](newt/example/exampleMulti.md)
 
 ## References
@@ -114,7 +116,7 @@ We ask that anyone using this package cite this [reference][2]
 - [ ] Always more tests!
 - [ ] pip package
 - [ ] More Doc Strings
-- [ ] Implement tests against MULTIN outputs
+- [X] Implement tests against MULTIN outputs
 - [X] Pull request to Charlie's Octave version &#8594; Collaborator
 - [X] Outer Multipoles from point-mass
 - [X] Example visualization

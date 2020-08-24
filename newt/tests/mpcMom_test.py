@@ -89,3 +89,8 @@ def test_trap():
     testtrap2 = rmf.read_gsq('testtrap.gsq', MOMPATH)
     assert (np.abs(testtrap - testtrap2) < 2e8*np.finfo(float).eps).all()
 
+
+def test_load():
+    testtrap = rmf.read_gsq('testtrap.gsq', MOMPATH)
+    testtrap2 = rmf.read_mpc(10, 'testload.mpc', MPCPATH)
+    assert (np.abs(testtrap - testtrap2) < 2e8*np.finfo(float).eps).all()

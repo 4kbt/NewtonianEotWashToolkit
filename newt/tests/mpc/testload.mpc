@@ -1,0 +1,3 @@
+%Test of 'load' in read_multiFor.read_mpc
+load testtrap
+add

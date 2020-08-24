@@ -25,8 +25,8 @@ LMax = 10
 
 # Create some rotating test-masses
 cyl = qlm.cylinder(LMax, mc, hc, rc)
-cyl3i = trs.translate_qlm(cyl, [r3, 0, 0], LMax)
-cyl2i = trs.translate_qlm(cyl, [r2, 0, 0], LMax)
+cyl3i = trs.translate_qlm(cyl, [r3, 0, 0])
+cyl2i = trs.translate_qlm(cyl, [r2, 0, 0])
 cyltot = np.copy(cyl3i)
 cyltot += rot.rotate_qlm(cyl3i, 2*np.pi/3, 0, 0)
 cyltot += rot.rotate_qlm(cyl3i, 4*np.pi/3, 0, 0)
@@ -36,7 +36,7 @@ cyltot += rot.rotate_qlm(cyl2i, np.pi, 0, 0)
 # create a test-mirror
 tm = qlm.cylinder(LMax, mtm, htm, rtm)
 tm = rot.rotate_qlm(tm, np.pi/2, np.pi/2, -np.pi/2)
-tm = trs.translate_q2Q(tm, [dx, dy, 0], LMax)
+tm = trs.translate_q2Q(tm, [dx, dy, 0])
 
 # Figure out the force at different rotor angles
 nAng = 120

@@ -29,8 +29,8 @@ def test_q2Q():
     # Get outer moments of points at +/-R
     Qm2 = pgm.Qmomentsb(10, m2)
     # Find outer moments from inner qm0 and qm0b translated to +/-R
-    Qlm = trs.translate_q2Q(qm0, [dr, 0, 0], 10)
-    Qlmb = trs.translate_q2Q(qm0b, [-dr, 0, 0], 10)
+    Qlm = trs.translate_q2Q(qm0, [dr, 0, 0])
+    Qlmb = trs.translate_q2Q(qm0b, [-dr, 0, 0])
     assert (abs(Qlm+Qlmb-Qm2) < 11*np.finfo(float).eps).all()
 
 
@@ -46,7 +46,7 @@ def test_q2q():
     # Find inner moments if translated by [.1, 0, 0]
     qm1p = pgm.qmoments(10, glb.translate_point_array(m1, [.1, 0, 0]))
     # Find moments translated by [.1, 0, 0]
-    qlmp = trs.translate_qlm(qm1, [0.1, 0, 0], 10)
+    qlmp = trs.translate_qlm(qm1, [0.1, 0, 0])
     assert (abs(qlmp-qm1p) < 11*np.finfo(float).eps).all()
 
 
@@ -61,7 +61,7 @@ def test_q2q_durso():
     # Find inner moments around origin
     qm1 = pgm.qmoments(4, m1)
     # Find moments translated by [.1, 0, 0]
-    qlmp = trs.translate_qlm(qm1, [rp, 0, 0], 4)
+    qlmp = trs.translate_qlm(qm1, [rp, 0, 0])
     # Analytic q44 moment
     q44 = 3*np.sqrt(35/8/np.pi)*(rp*ar**3 + ar*rp**3)
     assert abs(qlmp[4, 8] - q44) < 11*np.finfo(float).eps
@@ -79,7 +79,7 @@ def test_Q2Q():
     # Get outer moments of translated points
     Qm2b = pgm.Qmomentsb(10, glb.translate_point_array(m2, [0.1, 0, 0]))
     # Find outer moments from inner qm0 and qm0b translated to +/-R
-    Qlmp2 = trs.translate_Qlmb(Qm2, [0.1, 0, 0], 10)
+    Qlmp2 = trs.translate_Qlmb(Qm2, [0.1, 0, 0])
     assert (abs(Qlmp2-Qm2b) < 10*np.finfo(float).eps).all()
 
 
@@ -94,7 +94,7 @@ def test_Q2Q_durso():
     # Find outer moments around origin
     Qm1 = pgm.Qmomentsb(10, m1)
     # Find outer moments translated by [1, 0, 0]
-    Qlmp = trs.translate_Qlmb(Qm1, [rp, 0, 0], 10)
+    Qlmp = trs.translate_Qlmb(Qm1, [rp, 0, 0])
     # Analytic Q22 moment
     Q22 = (1/4)*np.sqrt(15/2/np.pi)*((ar+rp)**(-3) - (ar-rp)**(-3))
     assert abs(Qlmp[2, 12] - Q22) < 10*np.finfo(float).eps
@@ -112,7 +112,7 @@ def test_Q2Q2():
     # Get outer moments of translated points
     Qm2b = pgm.Qmomentsb(10, glb.translate_point_array(m2, [5, 0, 0]))
     # Find outer moments from inner qm0 and qm0b translated to +/-R
-    Qlmp2 = trs.translate_Qlmb(Qm2, [5, 0, 0], 10)
+    Qlmp2 = trs.translate_Qlmb(Qm2, [5, 0, 0])
     assert (abs(Qlmp2-Qm2b) < 10*np.finfo(float).eps).all()
 
 

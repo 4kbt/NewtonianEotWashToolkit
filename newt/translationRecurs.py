@@ -282,7 +282,7 @@ def transl_newt_z_RR_recurs2(LMax, dr):
     """
     # Descending array of lp from LMax through 0
     lp = np.arange(LMax+1)
-    cols = (-dr)**lp/sp.factorial(lp)
+    cols = (-np.sign(dr))**lp*np.exp(lp*np.log(np.abs(dr)) - sp.gammaln(lp+1))
     rows = [cols[0], *np.zeros(LMax)]
     rrms = []
     for m in range(LMax+1):
@@ -313,7 +313,7 @@ def transl_newt_z_SS_recurs2(LMax, dr):
     http://legacydirs.umiacs.umd.edu/~gumerov/PDFs/cs-tr-4701.pdf
     """
     lp = np.arange(LMax+1)
-    rows = (-dr)**lp/sp.factorial(lp)
+    rows = (-np.sign(dr))**lp*np.exp(lp*np.log(np.abs(dr)) - sp.gammaln(lp+1))
     cols = [rows[0], *np.zeros(LMax)]
     ssms = []
     for m in range(LMax+1):
@@ -344,7 +344,7 @@ def transl_newt_z_SR_recurs2(LMax, dr):
     http://legacydirs.umiacs.umd.edu/~gumerov/PDFs/cs-tr-4701.pdf
     """
     lp = np.arange(2*LMax+1)
-    svals = sp.factorial(lp)/dr**(lp+1)
+    svals = np.exp(sp.gammaln(lp+1) - (lp+1)*np.log(dr))
     srms = []
     for m in range(LMax+1):
         faca = alphanm(lp[m:LMax+1], m)

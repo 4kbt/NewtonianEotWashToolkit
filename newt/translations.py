@@ -9,36 +9,33 @@ import scipy.special as sp
 import newt.clebschGordan as cg
 
 
-def translate_qlm(qlm, rPrime, LMax=10):
+def translate_qlm(qlm, rPrime):
     r"""
-    Takes in a 10x21 q_lm interior set of moments up to l=10 and returns the
-    10x20 q_LM interior moments up to l=10 translated by the vector rPrime.
+    Takes in an inner set of moments, q_lm, and returns the translated inner
+    moments q_LM. The translation vector is rPrime.
 
     Inputs
     ------
     qlm : ndarray
-        (l+1)x(2l+1) array of sensor (interior) lowest order multipole moments.
+        (l+1)x(2l+1) array of lowest order inner multipole moments.
     rPrime : ndarray
         [x,y,z] translation from the origin where q_lm components were computed
-    LMax : int
-        Maximum order of new translated multipole moments. If LMax > l of the
-        untranslated moments, qlm, the results may be inaccurate.
 
     Returns
     -------
     qLM : ndarray
-        (l+1)x(2l+1) array of sensor (interior) lowest order multipole moments.
-        Moments are for the translated moments by rPrime.
+        (l+1)x(2l+1) array of lowest order inner multipole moments. Moments are
+        for the translated moments by rPrime.
 
     References
     ----------
+    https://journals.aps.org/prd/abstract/10.1103/PhysRevD.55.7970
     """
     rP = np.sqrt(rPrime[0]**2+rPrime[1]**2+rPrime[2]**2)
     phiP = np.arctan2(rPrime[1], rPrime[0])
     thetaP = np.arccos(rPrime[2]/rP)
     # Restrict LMax to size of qlm for now
-    Lqlm = np.shape(qlm)[0] - 1
-    LMax = Lqlm
+    LMax = np.shape(qlm)[0] - 1
 
     # Conjugate spherical harmonics
     ylmS = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
@@ -71,96 +68,33 @@ def translate_qlm(qlm, rPrime, LMax=10):
     return qLM
 
 
-def translate_qlmz(qlm, rPrimeZ, LMax=10):
+def translate_Qlmb(Qlm, rPrime):
     r"""
-    Takes in a 10x21 q_lm interior set of moments up to l=10 and returns the
-    10x20 q_LM interior moments up to l=10 translated by the vector rPrime.
+    Takes in an outer set of moments, Q_lm, and returns the translated outer
+    moments Q_LM. The translation vector is rPrime.
 
     Inputs
     ------
-    qlm : ndarray
-        (l+1)x(2l+1) array of sensor (interior) lowest order multipole moments.
+    Qlm : ndarray
+        (l+1)x(2l+1) array of lowest order outer multipole moments.
     rPrime : ndarray
-        [x,y,z] translation from the origin where q_lm components were computed
-    LMax : int
-        Maximum order of new translated multipole moments. If LMax > l of the
-        untranslated moments, qlm, the results may be inaccurate.
+        [x,y,z] translation from the origin where Q_lm components were computed
 
     Returns
     -------
-    qLM : ndarray
-        (l+1)x(2l+1) array of sensor (interior) lowest order multipole moments.
-        Moments are for the translated moments by rPrime.
+    QLM : ndarray
+        (l+1)x(2l+1) array of lowest order outer multipole moments. Moments are
+        for the translated moments by rPrime.
 
     References
     ----------
-    """
-    rP = rPrimeZ[2]
-    phiP = 0
-    thetaP = 0
-    # Restrict LMax to size of qlm for now
-    Lqlm = np.shape(qlm)[0] - 1
-    LMax = Lqlm
-
-    # Conjugate spherical harmonics
-    ylmS = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
-    qLM = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
-
-    for l in range(LMax+1):
-        sphHarmL = np.conj(sp.sph_harm(0, l, phiP, thetaP))
-        ylmS[l, LMax] = sphHarmL
-
-    for L in range(LMax+1):
-        for M in range(L+1):
-            # mP = 0 -> m = M
-            # m = M -> l = M
-            l = M
-            lP = L-l
-            rPlP = rP**lP
-            gamsum = sp.gammaln(2*L+2)-sp.gammaln(2*lP+2)-sp.gammaln(2*l+2)
-            fac = np.sqrt(4.*np.pi*np.exp(gamsum))
-            fac *= rPlP
-            cFac = fac*cg.cgCoeff(lP, l, 0, M, L, M)
-            qLM[L, LMax+M] += cFac*ylmS[lP, LMax]*qlm[l, LMax+M]
-
-    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
-    ms = np.arange(-LMax, LMax+1)
-    fac = (-1)**(np.abs(ms))
-    qLM += np.conj(np.fliplr(qLM))*fac
-    qLM[:, LMax] /= 2
-    return qLM
-
-
-def translate_Qlmb(Qlm, rPrime, LMax=10):
-    r"""
-    Takes in a 10x21 q_lm interior set of moments up to l=10 and returns the
-    10x20 q_LM interior moments up to l=10 translated by the vector rPrime.
-
-    Inputs
-    ------
-    qlm : ndarray
-        (l+1)x(2l+1) array of sensor (interior) lowest order multipole moments.
-    rPrime : ndarray
-        [x,y,z] translation from the origin where q_lm components were computed
-    LMax : int
-        Maximum order of new translated multipole moments. If LMax > l of the
-        untranslated moments, qlm, the results may be inaccurate.
-
-    Returns
-    -------
-    qLM : ndarray
-        (l+1)x(2l+1) array of sensor (interior) lowest order multipole moments.
-        Moments are for the translated moments by rPrime.
-
-    References
-    ----------
+    https://journals.aps.org/prd/abstract/10.1103/PhysRevD.55.7970
     """
     rP = np.sqrt(rPrime[0]**2+rPrime[1]**2+rPrime[2]**2)
     phiP = np.arctan2(rPrime[1], rPrime[0])
     thetaP = np.arccos(rPrime[2]/rP)
     # Restrict LMax to size of qlm for now
-    LQlm = np.shape(Qlm)[0] - 1
-    LMax = LQlm
+    LMax = np.shape(Qlm)[0] - 1
 
     # Conjugate spherical harmonics
     ylmS = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
@@ -193,29 +127,27 @@ def translate_Qlmb(Qlm, rPrime, LMax=10):
     return QLM
 
 
-def translate_q2Q(qlm, rPrime, LMax=10):
+def translate_q2Q(qlm, rPrime):
     r"""
-    Takes in a 10x21 q_lm interior set of moments up to l=10 and returns the
-    10x20 Q_LM outer moments up to l=10 translated by the vector rPrime.
+    Takes in an inner set of moments, q_lm, and returns the translated outer
+    moments Q_LM. The translation vector is rPrime.
 
     Inputs
     ------
     qlm : ndarray
-        (l+1)x(2l+1) array of sensor (interior) lowest order multipole moments.
+        (l+1)x(2l+1) array of lowest order inner multipole moments.
     rPrime : ndarray
         [x,y,z] translation from the origin where q_lm components were computed
-    LMax : int
-        Maximum order of new translated multipole moments. If LMax > l of the
-        untranslated moments, qlm, the results may be inaccurate.
 
     Returns
     -------
-    qLM : ndarray
-        (l+1)x(2l+1) array of sensor (interior) lowest order multipole moments.
-        Moments are for the translated moments by rPrime.
+    QLM : ndarray
+        (l+1)x(2l+1) array of lowest order outer multipole moments. Moments are
+        for the translated moments by rPrime.
 
     References
     ----------
+    https://journals.aps.org/prd/abstract/10.1103/PhysRevD.60.107501
     """
     rP = np.sqrt(rPrime[0]**2+rPrime[1]**2+rPrime[2]**2)
     phiP = np.arctan2(rPrime[1], rPrime[0])
