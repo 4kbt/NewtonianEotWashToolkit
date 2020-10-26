@@ -55,8 +55,8 @@ def test_cone():
     """
     pEven = 16
     pOdd = 15
-    cone = gshp.cone(1, 1, 1, pEven, pEven)
-    cone2 = gshp.cone(1, 1, 1, pOdd, pOdd)
+    cone = gshp.cone(1, 1, 1, np.pi, pEven, pEven)
+    cone2 = gshp.cone(1, 1, 1, np.pi, pOdd, pOdd)
     assert (np.average(cone[:, 1:3], 0) < 10*np.finfo(float).eps).all()
     assert (np.average(cone2[:, 1:3], 0) < 10*np.finfo(float).eps).all()
 

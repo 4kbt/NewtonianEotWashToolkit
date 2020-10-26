@@ -153,6 +153,7 @@ def annulus(LMax, dens, H, r0, r1, phic, phih):
 
     # Moments always satisfy Q(l, -m) = (-1)^m Q(l, m)*
     ms = np.arange(-L, L+1)
+    Qlmb *= np.exp(-1j*ms*phic)
     mfac = (-1)**(np.abs(ms))
     Qlmb += np.conj(np.fliplr(Qlmb))*mfac
     Qlmb[:, L] /= 2
