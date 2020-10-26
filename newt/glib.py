@@ -232,7 +232,8 @@ def display_points(pm1, pm2, scale_mass=False):
     pm2 : ndarray
         N2x4 array of second set of point masses [m, x, y, z]
     scale_mass : bool
-        Determines whether points are scaled based on their masses. Useful for legendre-gauss spacing.
+        Determines whether points are scaled based on their masses. Useful for
+        legendre-gauss spacing.
 
     Returns
     -------
@@ -243,15 +244,29 @@ def display_points(pm1, pm2, scale_mass=False):
     """
     fig = plt.figure()
     ax = Axes3D(fig)
-    s1 = 50
-    s2 = 50
+    s1 = 50*np.ones(len(pm1))
+    s2 = 50*np.ones(len(pm2))
     if scale_mass:
         pts1 = len(pm1)
         pts2 = len(pm2)
-        s1 = 100*pts1*pm1[:,0]
-        s2 = 100*pts1*pm2[:,0]
-    ax.scatter(pm1[:, 1], pm1[:, 2], pm1[:, 3], label='mass1', s=s1, alpha=.5)
-    ax.scatter(pm2[:, 1], pm2[:, 2], pm2[:, 3], label='mass2', s=s2,
-               marker='s', alpha=.5)
+        s1 = 100*pts1*pm1[:, 0]
+        s2 = 100*pts2*pm2[:, 0]
+        pmp1 = np.nonzero(pm1[:, 0])[0]
+        pmp2 = np.nonzero(pm2[:, 0])[0]
+        pmm1 = []
+        pmm2 = []
+    else:
+        pmp1 = np.where(pm1[:, 0] > 0)[0]
+        pmm1 = np.where(pm1[:, 0] < 0)[0]
+        pmp2 = np.where(pm2[:, 0] > 0)[0]
+        pmm2 = np.where(pm2[:, 0] < 0)[0]
+    ax.scatter(pm1[pmp1, 1], pm1[pmp1, 2], pm1[pmp1, 3], label='(+) mass1',
+               s=s1[pmp1], c='C0', alpha=.5)
+    ax.scatter(pm1[pmm1, 1], pm1[pmm1, 2], pm1[pmm1, 3], label='(-) mass1',
+               s=s1[pmm1], c='C2', alpha=.5)
+    ax.scatter(pm2[pmp2, 1], pm2[pmp2, 2], pm2[pmp2, 3], label='(+) mass2',
+               s=s2[pmp2], c='C1', marker='s', alpha=.5)
+    ax.scatter(pm2[pmm2, 1], pm2[pmm2, 2], pm2[pmm2, 3], label='(-) mass2',
+               s=s2[pmm2], c='C3', marker='s', alpha=.5)
     ax.legend()
     return fig, ax

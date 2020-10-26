@@ -54,6 +54,50 @@ def cyl_2_cart(RQZ):
     return XYZ
 
 
+def sphere(mass, R, N):
+    """
+    Creates point masses distributed in a sphere of mass m. This should only be
+    used for visualization, otherwise a sphere should be treated as a point
+    gravitationally.
+
+    Inputs
+    ------
+    mass : float
+        mass in kg
+    R : float
+        x-length of brick in m
+    N : float
+        number of points distributed in each dimension
+
+    Returns
+    -------
+    pointArray : ndarray
+        nx*ny*nz x 4 point mass array of format [m, x, y, z]
+    """
+    pointArray = np.zeros([N**3, 4])
+    pointArray[:, 0] = mass/N**3
+    grid = R/N
+
+    ctr = 0
+    for k in range(N):
+        for l in range(N):
+            for m in range(N):
+                x = (m-(N-1)/2)*grid
+                y = (l-(N-1)/2)*grid
+                z = (k-(N-1)/2)*grid
+                r = np.sqrt(x**2 + y**2 + z**2)
+                if r <= R:
+                    pointArray[ctr, 1:] = [x, y, z]
+                    ctr += 1
+
+    pointArray = pointArray[:ctr]
+
+    # Correct the masses of the points
+    pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
+
+    return pointArray
+
+
 def rectangle(mass, x, y, z, nx, ny, nz):
     """
     Creates point masses distributed in an rectangular solid of mass m.
@@ -82,13 +126,16 @@ def rectangle(mass, x, y, z, nx, ny, nz):
     """
     pointArray = np.zeros([nx*ny*nz, 4])
     pointArray[:, 0] = mass/float(nx*ny*nz)
+    zgrid = z/nz
+    xgrid = x/nx
+    ygrid = y/ny
 
     for k in range(nz):
         for l in range(ny):
             for m in range(nx):
-                pointArray[k*ny*nx+l*nx+m, 1] = m*x/float(nx-1)-x/2.
-                pointArray[k*ny*nx+l*nx+m, 2] = l*y/float(ny-1)-y/2.
-                pointArray[k*ny*nx+l*nx+m, 3] = k*z/float(nz-1)-z/2.
+                pointArray[k*ny*nx+l*nx+m, 1] = (m-(nx-1)/2)*xgrid
+                pointArray[k*ny*nx+l*nx+m, 2] = (l-(nx-1)/2)*ygrid
+                pointArray[k*ny*nx+l*nx+m, 3] = (k-(nz-1)/2)*zgrid
 
     return pointArray
 
@@ -145,9 +192,9 @@ def annulus(mass, iR, oR, t, nx, nz):
     return pointArray
 
 
-def cone(mass, R, H, nx, nz):
+def cone(mass, R, H, beta, nx, nz):
     """
-    Creates point masses distributed in an annulus of mass m.
+    Creates point masses distributed in an cone of mass m.
 
     Inputs
     ------
@@ -157,6 +204,8 @@ def cone(mass, R, H, nx, nz):
         outer radius of cone in m
     H : float
         height of cone in m
+    beta : float
+        half of the subtended angle in radians
     nx : float
         number of points distributed in x,y
     nz : float
@@ -167,28 +216,37 @@ def cone(mass, R, H, nx, nz):
     pointArray : ndarray
         point mass array of format [m, x, y, z]
     """
-    zgrid = H/(nz-1)
-    # not sure why this works better as 2*R/nx
-    # annulus suggests should be 2*R/(nx-1) but test_cone fails
-    xgrid = R*2./nx
-    ygrid = xgrid
+    xmax = R
+    if beta < np.pi/2:
+        xmin = 0
+        ymax = np.sin(beta)*R
+    else:
+        xmin = np.cos(beta)*R
+        ymax = R
+    zgrid = H/nz
+    xgrid = (xmax-xmin)/nx
+    xave = (xmax+xmin)/2
+    ygrid = 2*ymax/nx
 
     density = mass/(np.pi*H*(R**2)/3.)
     pointMass = density*xgrid*ygrid*zgrid
-    tanTheta = H/R
 
     pointArray = np.zeros([nx*nx*nz, 4])
     pointArray[:, 0] = pointMass
+    ctr = 0
     for k in range(nz):
         for l in range(nx):
             for m in range(nx):
-                pointArray[k*nx*nx+l*nx+m, 1] = m*xgrid-R
-                pointArray[k*nx*nx+l*nx+m, 2] = l*ygrid-R
-                pointArray[k*nx*nx+l*nx+m, 3] = k*zgrid
+                x = (m-(nx-1)/2)*xgrid + xave
+                y = (l-(nx-1)/2)*ygrid
+                z = (k-(nz-1)/2)*zgrid + H/2
+                r = np.sqrt(x**2 + y**2)
+                q = np.arctan2(y, x)
+                if np.abs(q) <= beta and r**2 <= R**2*(1-z/H)**2:
+                    pointArray[ctr, 1:] = [x, y, z]
+                    ctr += 1
 
-    pointArray = np.array([pointArray[k] for k in range(nx*nx*nz) if
-                           pointArray[k, 1]**2+pointArray[k, 2]**2 <=
-                           (pointArray[k, 3]/tanTheta)**2])
+    pointArray = pointArray[:ctr]
 
     # Correct the masses of the points
     pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
@@ -271,9 +329,10 @@ def wedge(mass, iR, oR, t, beta, nx, nz):
     else:
         xmin = np.cos(beta)*oR
         ymax = oR
-    zgrid = t/(nz-1)
-    xgrid = (xmax-xmin)/(nx-1)
-    ygrid = 2*ymax/(nx-1)
+    zgrid = t/nz
+    xgrid = (xmax-xmin)/nx
+    xave = (xmax+xmin)/2
+    ygrid = 2*ymax/nx
 
     density = mass/(np.pi*(oR**2-iR**2)*t)
     pointMass = density*xgrid*ygrid*zgrid
@@ -285,9 +344,9 @@ def wedge(mass, iR, oR, t, beta, nx, nz):
         for l in range(nx):
             for m in range(nx):
                 # idx = k*nx*nx+l*nx+m
-                x = m*xgrid + xmin
-                y = l*ygrid - ymax
-                z = k*zgrid - t/2
+                x = (m-(nx-1)/2)*xgrid + xave
+                y = (l-(nx-1)/2)*ygrid
+                z = (k-(nz-1)/2)*zgrid
                 r = np.sqrt(x**2 + y**2)
                 q = np.arctan2(y, x)
                 if np.abs(q) <= beta and r <= oR and r >= iR:
@@ -333,9 +392,10 @@ def trapezoid(mass, iR, oR, t, beta, nx, nz):
     xclose = iR*np.cos(beta)
     xfar = oR*np.cos(beta)
     d = oR*np.sin(beta)
-    zgrid = t/(nz-1)
-    xgrid = (xfar-xclose)/(nx-1)
-    ygrid = 2*d/(nx-1)
+    zgrid = t/nz
+    xgrid = (xfar-xclose)/nx
+    xave = (xfar+xclose)/2
+    ygrid = 2*d/nx
 
     density = mass/(np.pi*(oR**2-iR**2)*t)
     pointMass = density*xgrid*ygrid*zgrid
@@ -348,10 +408,9 @@ def trapezoid(mass, iR, oR, t, beta, nx, nz):
     for k in range(nz):
         for l in range(nx):
             for m in range(nx):
-                # idx = k*nx*nx+l*nx+m
-                x = m*xgrid + xclose
-                y = l*ygrid - d
-                z = k*zgrid - t/2
+                x = (m-(nx-1)/2)*xgrid + xave
+                y = (l-(nx-1)/2)*ygrid
+                z = (k-(nz-1)/2)*zgrid
                 q = np.arctan2(y, x)
                 if np.abs(q) <= beta:
                     pointArray[ctr, 1:] = [x, y, z]
@@ -400,11 +459,10 @@ def outer_cone(mass, iR, oR, H, beta, nx, nz):
     else:
         xmin = np.cos(beta)*oR
         ymax = oR
-    zgrid = H/(nz-1)
-    # not sure why this works better as 2*R/nx
-    # annulus suggests should be 2*R/(nx-1) but test_cone fails
-    xgrid = (xmax-xmin)/(nx-1)
-    ygrid = 2*ymax/(nx-1)
+    zgrid = H/nz
+    xgrid = (xmax-xmin)/nx
+    xave = (xmax+xmin)/2
+    ygrid = 2*ymax/nx
     Hp = H*oR/(oR-iR)
     vol = beta*(Hp*oR**2/3-H*iR**2-(Hp-H)*iR**2/3)
 
@@ -418,9 +476,9 @@ def outer_cone(mass, iR, oR, H, beta, nx, nz):
     for k in range(nz):
         for l in range(nx):
             for m in range(nx):
-                x = m*xgrid+xmin
-                y = l*ygrid-ymax
-                z = k*zgrid
+                x = (m-(nx-1)/2)*xgrid + xave
+                y = (l-(nx-1)/2)*ygrid
+                z = (k-(nz-1)/2)*zgrid + H/2
                 q = np.arctan2(y, x)
                 r = np.sqrt(x**2 + y**2)
                 if (np.abs(q) <= beta) and (r <= oR-z/tanPhi) and (iR <= r):
@@ -463,10 +521,10 @@ def tri_prism(mass, d, y1, y2, t, nx, ny, nz):
         print('Require y2 > y1')
         return []
     base = np.max([0, y2])-np.min([0, y1])
-    zgrid = t/(nz-1)
-    xgrid = d/(nx-1)
-    ygrid = base/(ny-1)
-    print(base, xgrid, ygrid, zgrid)
+    yave = base/2
+    zgrid = t/nz
+    xgrid = d/nx
+    ygrid = base/ny
 
     density = mass/(t*(y2-y1)*d/2)
     pointMass = density*(xgrid*ygrid*zgrid/2)
@@ -476,13 +534,318 @@ def tri_prism(mass, d, y1, y2, t, nx, ny, nz):
     for k in range(nz):
         for l in range(ny):
             for m in range(nx):
-                pointArray[k*nx*ny+l*nx+m, 1] = m*xgrid
-                pointArray[k*nx*ny+l*nx+m, 2] = l*ygrid
-                pointArray[k*nx*ny+l*nx+m, 3] = k*zgrid-t/2.
+                pointArray[k*nx*ny+l*nx+m, 1] = (m-(nx-1)/2)*xgrid + d/2
+                pointArray[k*nx*ny+l*nx+m, 2] = (l-(ny-1)/2)*ygrid + yave
+                pointArray[k*nx*ny+l*nx+m, 3] = (k-(nz-1)/2)*zgrid
 
     pointArray = np.array([pointArray[k] for k in range(nx*ny*nz) if
                            pointArray[k, 1]*y1 <= pointArray[k, 2]*d and
                            pointArray[k, 1]*y2 >= pointArray[k, 2]*d])
+
+    # Correct the masses of the points
+    pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
+
+    return pointArray
+
+
+def tetrahedron(mass, x, y1, y2, z, nx, ny, nz):
+    """
+    Creates point masses distributed in a tetrahedron of mass m.
+
+    Inputs
+    ------
+    m : float
+        mass in kg
+    iR : float
+        inner radius of annulus in m
+    oR : float
+        outer radius of annulus in m
+    t : float
+        thickness of annulus in m
+    nx : float
+        number of points distributed in x
+    ny : float
+        number of points distributed in y
+    nz : float
+        number of points distributed in z
+
+    Returns
+    -------
+    pointArray : ndarray
+        point mass array of format [m, x, y, z]
+    """
+    if y2 < y1:
+        print('Require y2 > y1')
+        return []
+    base = np.max([0, y2])-np.min([0, y1])
+    yave = base/2
+    zgrid = z/nz
+    xgrid = x/nx
+    ygrid = base/ny
+    print(xgrid, ygrid)
+
+    density = mass/(z*(y2-y1)*x/6)
+    pointMass = density*(xgrid*ygrid*zgrid/2)
+
+    pointArray = np.zeros([nx*ny*nz, 4])
+    pointArray[:, 0] = pointMass
+    ctr = 0
+    for k in range(nz):
+        for l in range(ny):
+            for m in range(nx):
+                xval = (m-(nx-1)/2)*xgrid + x/2
+                yval = (l-(ny-1)/2)*ygrid + yave
+                zval = (k-(nz-1)/2)*zgrid + z/2
+                yx = yval*x
+                xr = xval/x
+                if (xval*y1 <= yx) and (xval*y2 >= yx) and (zval <= z*(1-xr)):
+                    pointArray[ctr, 1:] = xval, yval, zval
+                    ctr += 1
+
+    pointArray = pointArray[:ctr]
+
+    # Correct the masses of the points
+    pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
+
+    return pointArray
+
+
+def ngon_prism(mass, H, a, N, nx, nz):
+    """
+    Creates point masses distributed in a triangular prism of mass m.
+
+    Inputs
+    ------
+    mass : float
+        Mass of the prism
+    H : float
+        Total height of the prism
+    a : float
+        Length of sides of prism
+    N : int
+        Number of sides to regular prism
+    nx : float
+        number of points distributed in x,y
+    nz : float
+        number of points distributed in z
+
+    Returns
+    -------
+    pointArray : ndarray
+        point mass array of format [m, x, y, z]
+    """
+    phih = np.pi/N
+    b = a/(2*np.tan(phih))
+    d = a/(2*np.sin(phih))
+    zgrid = H/nz
+    xgrid = 2*d/nx
+    ygrid = xgrid
+
+    density = mass/(N*H*a*b/2)
+    pointMass = density*(xgrid*ygrid*zgrid/2)
+
+    pointArray = np.zeros([nx*nx*nz, 4])
+    pointArray[:, 0] = pointMass
+    ctr = 0
+    for k in range(nz):
+        for l in range(nx):
+            for m in range(nx):
+                x = (m-(nx-1)/2)*xgrid
+                y = (l-(nx-1)/2)*ygrid
+                z = (k-(nz-1)/2)*zgrid
+                qsect = np.arctan2(y, x) % (2*phih)
+                if qsect > phih:
+                    qsect -= 2*phih
+                r = np.sqrt(x**2 + y**2)
+                xsect = r*np.cos(qsect)
+                if xsect <= b:
+                    pointArray[ctr, 1:] = x, y, z
+                    ctr += 1
+
+    pointArray = pointArray[:ctr]
+
+    # Correct the masses of the points
+    pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
+
+    return pointArray
+
+
+def pyramid(mass, x, y, z, nx, ny, nz):
+    """
+    A rectangular pyramid extending above the xy-plane by a height z. The
+    rectangular base of the pyramid has vertices at (x,y) = (x, y), (x, -y),
+    (-x, y), and (-x, -y).
+
+    Inputs
+    ------
+    mass : float
+        mass in kg
+    x : float
+        Half-length of rectangular base of pyramid
+    y : float
+        Half-width of rectangular base of pyramid
+    z : float
+        Height of pyramid
+    nx : float
+        number of points distributed in x
+    nx : float
+        number of points distributed in x,y
+    nz : float
+        number of points distributed in z
+
+    Returns
+    -------
+    pointArray : ndarray
+        point mass array of format [m, x, y, z]
+    """
+    zgrid = z/nz
+    xgrid = x/nx
+    ygrid = y/ny
+    print(xgrid, ygrid)
+
+    density = mass/(z*y*x/3)
+    pointMass = density*(xgrid*ygrid*zgrid/3)
+
+    pointArray = np.zeros([nx*ny*nz, 4])
+    pointArray[:, 0] = pointMass
+    ctr = 0
+    for k in range(nz):
+        for l in range(ny):
+            for m in range(nx):
+                xval = (m-(nx-1)/2)*xgrid
+                yval = (l-(ny-1)/2)*ygrid
+                zval = (k-(nz-1)/2)*zgrid + z/2
+                yx = yval*x/2
+                xy = xval*y/2
+                xr = 2*xval/x
+                yr = 2*yval/y
+                # upper quad
+                if (xy <= yx) and (xy >= -yx) and (zval <= z*(1-yr)):
+                    pointArray[ctr, 1:] = xval, yval, zval
+                    ctr += 1
+                # lower quad
+                elif (xy >= yx) and (xy <= -yx) and (zval <= z*(1+yr)):
+                    pointArray[ctr, 1:] = xval, yval, zval
+                    ctr += 1
+                # left quad
+                elif (xy <= yx) and (xy <= -yx) and (zval <= z*(1+xr)):
+                    pointArray[ctr, 1:] = xval, yval, zval
+                    ctr += 1
+                # right quad
+                elif (xy >= yx) and (xy >= -yx) and (zval <= z*(1-xr)):
+                    pointArray[ctr, 1:] = xval, yval, zval
+                    ctr += 1
+
+    pointArray = pointArray[:ctr]
+
+    # Correct the masses of the points
+    pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
+
+    return pointArray
+
+
+def cylhole(mass, r, R, nx, nz):
+    """
+    Creates point masses distributed in an annulus of mass m.
+
+    Inputs
+    ------
+    m : float
+        mass in kg
+    r : float
+        smaller radius extended along z
+    R : float
+        larger radius extended along x
+    nx : float
+        number of points distributed in x,y
+    nz : float
+        number of points distributed in z
+
+    Returns
+    -------
+    pointArray : ndarray
+        point mass array of format [m, x, y, z]
+    """
+    zgrid = 2*R/nz
+    xgrid = 2*r/nx
+    ygrid = xgrid
+
+    # guess at volume, will correct for later
+    density = mass/(16*R*r**2/3)
+    pointMass = density*xgrid*ygrid*zgrid
+
+    pointArray = np.zeros([nx*nx*nz, 4])
+    pointArray[:, 0] = pointMass
+    ctr = 0
+    for k in range(nz):
+        for l in range(nx):
+            for m in range(nx):
+                x = (m-(nx-1)/2)*xgrid
+                y = (l-(nx-1)/2)*ygrid
+                z = (k-(nz-1)/2)*zgrid
+                rz = np.sqrt(x**2 + y**2)
+                rx = np.sqrt(y**2 + z**2)
+                if rz <= r and rx <= R:
+                    pointArray[ctr, 1:] = x, y, z
+                    ctr += 1
+
+    pointArray = pointArray[:ctr]
+
+    # Correct the masses of the points
+    pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
+
+    return pointArray
+
+
+def platehole(mass, t, r, theta, nx, ny, nz):
+    """
+    Creates point masses distributed in an annulus of mass m.
+
+    Inputs
+    ------
+    m : float
+        mass in kg
+    t : float
+        thickness of plate, centered vertically about x,y-plane
+    r : float
+        radius of hole
+    theta : float
+        angle of hole
+    nx : float
+        number of points distributed in x,y
+    nz : float
+        number of points distributed in z
+
+    Returns
+    -------
+    pointArray : ndarray
+        point mass array of format [m, x, y, z]
+    """
+    s = np.tan(theta)
+    x = 2*(r + t*s/2)
+    zgrid = t/nz
+    xgrid = 2*x/nx
+    ygrid = 2*r/ny
+
+    # guess at volume, will correct for later
+    density = mass/(np.pi*np.sqrt(1+s**2)*t*r**2)
+    pointMass = density*xgrid*ygrid*zgrid
+
+    pointArray = np.zeros([nx*ny*nz, 4])
+    pointArray[:, 0] = pointMass
+    ctr = 0
+    for k in range(nz):
+        for l in range(ny):
+            for m in range(nx):
+                x = (m-(nx-1)/2)*xgrid
+                y = (l-(ny-1)/2)*ygrid
+                z = (k-(nz-1)/2)*zgrid
+                xz = z*s
+                if (y**2 + (x-xz)**2) <= r**2:
+                    pointArray[ctr, 1:] = x, y, z
+                    ctr += 1
+
+    pointArray = pointArray[:ctr]
 
     # Correct the masses of the points
     pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
