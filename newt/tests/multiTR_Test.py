@@ -10,12 +10,13 @@ import newt.pg2Multi as pgm
 import newt.translations as trs
 import newt.translationRecurs as trr
 import newt.rotations as rot
-import pytest
 
 
 def test_q2Q():
     """
-    Check that the inner to outer translate method matches PointGravity.
+    Check that the inner to outer translate method matches PointGravity. This
+    translation method is worse for smaller translations. For R=10, the error
+    approaches 1e7*epsilon.
     """
     d = 1
     R = 100
@@ -187,7 +188,7 @@ def test_q2q_RR():
     # Find inner moments if translated by [.1, 0, 0]
     qm1p = pgm.qmoments(10, glb.translate_point_array(m1, [0, 0, 0.1]))
     # Find moments translated by [.1, 0, 0]
-    rrms = trr.transl_newt_z_RR_recurs2(10, .1)
+    rrms = trr.transl_newt_z_RR(10, .1)
     qlmp = trr.apply_trans_mat(qm1, rrms)
     assert (abs(qlmp-qm1p) < 11*np.finfo(float).eps).all()
 
@@ -204,19 +205,20 @@ def test_Q2Q_SS():
     # Get outer moments of translated points
     Qm2b = pgm.Qmomentsb(10, glb.translate_point_array(m2, [0, 0, 0.1]))
     # Find outer moments from inner qm0 and qm0b translated to +/-R
-    ssms = trr.transl_newt_z_SS_recurs2(10, .1)
+    ssms = trr.transl_newt_z_SS(10, .1)
     Qlmp2 = trr.apply_trans_mat(Qm2, ssms)
     assert (abs(Qlmp2-Qm2b) < 10*np.finfo(float).eps).all()
 
 
-@pytest.mark.xfail
 def test_q2Q_SR():
     """
-    Check that the inner to outer translate method matches PointGravity.
+    Check that the inner to outer translate method matches PointGravity. This
+    translation method is worse for smaller translations. For R=10, the error
+    approaches 1e7*epsilon.
     """
     d = 1
     R = 100
-    m, M = 1, 1
+    m = 1
     m1 = np.array([[m, d, 0, 0], [m, -d, 0, 0]])
     m2 = glb.translate_point_array(m1, [0, 0, R])
     # Create inner moments of each points at +/-r
@@ -224,6 +226,6 @@ def test_q2Q_SR():
     # Get outer moments of points at +/-R
     Qm2 = pgm.Qmomentsb(10, m2)
     # Find outer moments from inner qm0 and qm0b translated to +/-R
-    srms = trr.transl_newt_z_SR_recurs2(10, R)
+    srms = trr.transl_newt_z_SR(10, R)
     Qlm = trr.apply_trans_mat(qm0, srms)
     assert (abs(Qlm-Qm2) < 11*np.finfo(float).eps).all()

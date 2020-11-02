@@ -36,5 +36,5 @@ ax[1].set_xlabel('m')
 fig.suptitle(r'$L=40$ small-d Wigner matrix for $\beta=\pi/4$')
 
 # Compare the calculation times
-print("recursive (l<=100)\t|\texplicit (l=40)")
+print("recursive (l<=100)[s]\t|\texplicit (l=40)[s]")
 print(toc-tic, "\t|\t", toc2-tic2)

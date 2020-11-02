@@ -140,17 +140,17 @@ def rectangle(mass, x, y, z, nx, ny, nz):
     return pointArray
 
 
-def annulus(mass, iR, oR, t, nx, nz):
+def annulus(mass, r1, r2, t, nx, nz):
     """
     Creates point masses distributed in an annulus of mass m.
 
     Inputs
     ------
-    m : float
+    mass : float
         mass in kg
-    iR : float
+    r1 : float
         inner radius of annulus in m
-    oR : float
+    r2 : float
         outer radius of annulus in m
     t : float
         thickness of annulus in m
@@ -165,10 +165,10 @@ def annulus(mass, iR, oR, t, nx, nz):
         point mass array of format [m, x, y, z]
     """
     zgrid = t/float(nz)
-    xgrid = oR*2./float(nx)
+    xgrid = r2*2./float(nx)
     ygrid = xgrid
 
-    density = mass/(np.pi*(oR**2-iR**2)*t)
+    density = mass/(np.pi*(r2**2-r1**2)*t)
     pointMass = density*xgrid*ygrid*zgrid
 
     pointArray = np.zeros([nx*nx*nz, 4])
@@ -183,8 +183,8 @@ def annulus(mass, iR, oR, t, nx, nz):
                 loopCounter += 1
 
     pointArray = np.array([pointArray[k] for k in range(nx*nx*nz) if
-                           pointArray[k, 1]**2+pointArray[k, 2]**2 >= iR**2 and
-                           pointArray[k, 1]**2+pointArray[k, 2]**2 <= oR**2])
+                           pointArray[k, 1]**2+pointArray[k, 2]**2 >= r1**2 and
+                           pointArray[k, 1]**2+pointArray[k, 2]**2 <= r2**2])
 
     # Correct the masses of the points
     pointArray[:, 0] *= mass/np.sum(pointArray[:, 0])
@@ -194,11 +194,12 @@ def annulus(mass, iR, oR, t, nx, nz):
 
 def cone(mass, R, H, beta, nx, nz):
     """
-    Creates point masses distributed in an cone of mass m.
+    Creates point masses distributed as a section of a cone of with apex at z=H
+    and base radius of R.
 
     Inputs
     ------
-    m : float
+    mass : float
         mass in kg
     R : float
         outer radius of cone in m
@@ -256,7 +257,7 @@ def cone(mass, R, H, beta, nx, nz):
 
 def spherical_random_shell(mass, r, N):
     """
-    Generate a spherical shell with mass m, radius r, and about N points.
+    Generate a spherical shell with radius r and about N points.
 
     Inputs
     ------
@@ -296,17 +297,18 @@ def spherical_random_shell(mass, r, N):
     return pointArray
 
 
-def wedge(mass, iR, oR, t, beta, nx, nz):
+def wedge(mass, r1, r2, t, beta, nx, nz):
     """
-    Creates point masses distributed in an annulus of mass m.
+    Creates point masses distributed as a section of an annulus of inner and
+    outer radius r1 and r2, thickness t, and half-subtended angle beta.
 
     Inputs
     ------
     m : float
         mass in kg
-    iR : float
+    r1 : float
         inner radius of annulus in m
-    oR : float
+    r2 : float
         outer radius of annulus in m
     t : float
         thickness of annulus in m
@@ -322,19 +324,19 @@ def wedge(mass, iR, oR, t, beta, nx, nz):
     pointArray : ndarray
         point mass array of format [m, x, y, z]
     """
-    xmax = oR
+    xmax = r2
     if beta < np.pi/2:
-        xmin = np.cos(beta)*iR
-        ymax = np.sin(beta)*oR
+        xmin = np.cos(beta)*r1
+        ymax = np.sin(beta)*r2
     else:
-        xmin = np.cos(beta)*oR
-        ymax = oR
+        xmin = np.cos(beta)*r2
+        ymax = r2
     zgrid = t/nz
     xgrid = (xmax-xmin)/nx
     xave = (xmax+xmin)/2
     ygrid = 2*ymax/nx
 
-    density = mass/(np.pi*(oR**2-iR**2)*t)
+    density = mass/(np.pi*(r2**2-r1**2)*t)
     pointMass = density*xgrid*ygrid*zgrid
 
     pointArray = np.zeros([nx*nx*nz, 4])
@@ -349,7 +351,7 @@ def wedge(mass, iR, oR, t, beta, nx, nz):
                 z = (k-(nz-1)/2)*zgrid
                 r = np.sqrt(x**2 + y**2)
                 q = np.arctan2(y, x)
-                if np.abs(q) <= beta and r <= oR and r >= iR:
+                if np.abs(q) <= beta and r <= r2 and r >= r1:
                     pointArray[ctr, 1:] = [x, y, z]
                     ctr += 1
 
@@ -361,19 +363,19 @@ def wedge(mass, iR, oR, t, beta, nx, nz):
     return pointArray
 
 
-def trapezoid(mass, iR, oR, t, beta, nx, nz):
+def trapezoid(mass, r1, r2, t, beta, nx, nz):
     """
     Creates point masses distributed in a trapezoid of mass m. Centered
     vertically about the xy-plane and displaced along the x-axis so that the
-    closest point to the origin is at iR*cos(beta).
+    closest point to the origin is at r1*cos(beta).
 
     Inputs
     ------
     m : float
         mass in kg
-    iR : float
+    r1 : float
         inner radius of trapezoid in m
-    oR : float
+    r2 : float
         outer radius of trapezoid in m
     t : float
         thickness of trapezoid in m
@@ -389,15 +391,15 @@ def trapezoid(mass, iR, oR, t, beta, nx, nz):
     pointArray : ndarray
         point mass array of format [m, x, y, z]
     """
-    xclose = iR*np.cos(beta)
-    xfar = oR*np.cos(beta)
-    d = oR*np.sin(beta)
+    xclose = r1*np.cos(beta)
+    xfar = r2*np.cos(beta)
+    d = r2*np.sin(beta)
     zgrid = t/nz
     xgrid = (xfar-xclose)/nx
     xave = (xfar+xclose)/2
     ygrid = 2*d/nx
 
-    density = mass/(np.pi*(oR**2-iR**2)*t)
+    density = mass/(np.pi*(r2**2-r1**2)*t)
     pointMass = density*xgrid*ygrid*zgrid
 
     pointArray = np.zeros([nx*nx*nz, 4])
@@ -424,19 +426,19 @@ def trapezoid(mass, iR, oR, t, beta, nx, nz):
     return pointArray
 
 
-def outer_cone(mass, iR, oR, H, beta, nx, nz):
+def outer_cone(mass, r1, r2, H, beta, nx, nz):
     """
-    Creates point masses distributed in an annular cone of mass m. If iR=0, it
-    should be identical to cone. The sloped edge reaches a height H at iR and
-    is 0 at oR.
+    Creates point masses distributed in an annular cone of mass m. If r1=0, it
+    should be identical to cone. The sloped edge reaches a height H at r1 and
+    is 0 at r2.
 
     Inputs
     ------
     m : float
         mass in kg
-    iR : float
+    r1 : float
         inner radius of cone arc
-    oR : float
+    r2 : float
         outer radius of cone arc in m
     H : float
         height of cone in m
@@ -452,23 +454,23 @@ def outer_cone(mass, iR, oR, H, beta, nx, nz):
     pointArray : ndarray
         point mass array of format [m, x, y, z]
     """
-    xmax = oR
+    xmax = r2
     if beta < np.pi/2:
-        xmin = np.cos(beta)*iR
-        ymax = np.sin(beta)*oR
+        xmin = np.cos(beta)*r1
+        ymax = np.sin(beta)*r2
     else:
-        xmin = np.cos(beta)*oR
-        ymax = oR
+        xmin = np.cos(beta)*r2
+        ymax = r2
     zgrid = H/nz
     xgrid = (xmax-xmin)/nx
     xave = (xmax+xmin)/2
     ygrid = 2*ymax/nx
-    Hp = H*oR/(oR-iR)
-    vol = beta*(Hp*oR**2/3-H*iR**2-(Hp-H)*iR**2/3)
+    Hp = H*r2/(r2-r1)
+    vol = beta*(Hp*r2**2/3-H*r1**2-(Hp-H)*r1**2/3)
 
     density = mass/vol
     pointMass = density*xgrid*ygrid*zgrid
-    tanPhi = H/(oR-iR)
+    tanPhi = H/(r2-r1)
 
     pointArray = np.zeros([nx*nx*nz, 4])
     pointArray[:, 0] = pointMass
@@ -481,7 +483,7 @@ def outer_cone(mass, iR, oR, H, beta, nx, nz):
                 z = (k-(nz-1)/2)*zgrid + H/2
                 q = np.arctan2(y, x)
                 r = np.sqrt(x**2 + y**2)
-                if (np.abs(q) <= beta) and (r <= oR-z/tanPhi) and (iR <= r):
+                if (np.abs(q) <= beta) and (r <= r2-z/tanPhi) and (r1 <= r):
                     pointArray[ctr, 1:] = [x, y, z]
                     ctr += 1
 
@@ -495,15 +497,16 @@ def outer_cone(mass, iR, oR, H, beta, nx, nz):
 
 def tri_prism(mass, d, y1, y2, t, nx, ny, nz):
     """
-    Creates point masses distributed in a triangular prism of mass m.
+    Creates point masses distributed in a triangular prism with vertices at
+    (x, y, z) = (0, 0, +/-t/2), (d, y1, +/-t/2), (d, y2, +/-t/2) with y2 > y1.
 
     Inputs
     ------
     m : float
         mass in kg
-    iR : float
+    r1 : float
         inner radius of annulus in m
-    oR : float
+    r2 : float
         outer radius of annulus in m
     t : float
         thickness of annulus in m
@@ -550,18 +553,21 @@ def tri_prism(mass, d, y1, y2, t, nx, ny, nz):
 
 def tetrahedron(mass, x, y1, y2, z, nx, ny, nz):
     """
-    Creates point masses distributed in a tetrahedron of mass m.
+    A tetrahedron with vertices at (x,y,z) = (x,y1,0), (x,y2,0), (0,0,0), and
+    (0,0,z).
 
     Inputs
     ------
     m : float
         mass in kg
-    iR : float
-        inner radius of annulus in m
-    oR : float
-        outer radius of annulus in m
-    t : float
-        thickness of annulus in m
+    x : float
+        X-position of first and second vertices
+    y1 : float
+        Y-position of first vertex
+    y2 : float
+        Y-position of second vertex
+    z : float
+        Distance to vertex along z-axis
     nx : float
         number of points distributed in x
     ny : float
@@ -612,7 +618,8 @@ def tetrahedron(mass, x, y1, y2, z, nx, ny, nz):
 
 def ngon_prism(mass, H, a, N, nx, nz):
     """
-    Creates point masses distributed in a triangular prism of mass m.
+    Creates point masses distributed in a regular N-gon prism of thickness H
+    and with sides of length a.
 
     Inputs
     ------
@@ -746,7 +753,9 @@ def pyramid(mass, x, y, z, nx, ny, nz):
 
 def cylhole(mass, r, R, nx, nz):
     """
-    Creates point masses distributed in an annulus of mass m.
+    The shape consists of the volume that would be removed by drilling a hole
+    of radius r into a cylinder of radius R. The symmetry axis of the hole is
+    along zhat, and the cylinder has its symmetry axis along yhat.
 
     Inputs
     ------
@@ -799,18 +808,22 @@ def cylhole(mass, r, R, nx, nz):
 
 def platehole(mass, t, r, theta, nx, ny, nz):
     """
-    Creates point masses distributed in an annulus of mass m.
+    This shape consists of the volume that would be removed by drilling a hole
+    of radius r through a parallel-sided plate of thickness t. The plate is
+    centered on the xy-plane. The hole axis, which passes through the origin,
+    lies in the xz-plane at an angle theta measured from zhat, where -pi/2 <
+    theta < pi/2.
 
     Inputs
     ------
     m : float
         mass in kg
     t : float
-        thickness of plate, centered vertically about x,y-plane
+        Thickness of rectangular plate, centered on xy-plane
     r : float
-        radius of hole
+        Radius of cylindrical hole
     theta : float
-        angle of hole
+        Angle of hole relative to z axis, tilted toward x axis.
     nx : float
         number of points distributed in x,y
     nz : float
