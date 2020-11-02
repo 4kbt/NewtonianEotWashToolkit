@@ -135,133 +135,7 @@ def transl_yuk_z_RR_recurs(LMax, dr, k):
     return eflm, efms
 
 
-def transl_newt_z_SR_recurs(LMax, dr):
-    """
-    Translate coaxially from regular to singular, Gumerov and Duraiswami.
-
-    Inputs
-    ------
-    l : int
-        Order of multipole expansion to output rotation matrix coefficient H
-
-    Reference
-    ---------
-    "Recursions for the computation of multipole translation and rotation
-    coefficients for the 3-d helmholtz equation."
-
-    https://arxiv.org/pdf/1403.7698v1.pdf
-    """
-    # Create (E|F)_{l,m}^{m}
-    eflm = np.zeros([2*LMax+1, LMax+1])
-    # Start (E|F)_{l, 0}^{0}
-    ls = np.arange(2*LMax+1)
-    eflm[:, 0] = (-1)**ls*np.sqrt(2*ls+1)*sp.factorial2(2*ls-1)/dr**(ls+1)
-    # now recursion 4.86 for (E|F)_{l, m}^{m}
-    for m in range(LMax):
-        for l in range(2*LMax-m):
-            # (n=m)
-            blmm = get_bnm(l, -m-1)
-            blmp = get_bnm(l+1, m)
-            bmm = get_bnm(m+1, -m-1)
-            eflm[l, m+1] = (eflm[l-1, m]*blmm - eflm[l+1, m]*blmp)/bmm
-
-    efms = []
-    # Now create (E|F)^m matrices (p-|m|)x(p-|m|)
-    # Start with (2*p-|m|)x(p-|m|) and truncate
-    for m in range(LMax+1):
-        efm = np.zeros([2*LMax+1-2*m, LMax-m+1])
-        efm[:, 0] = eflm[m:2*LMax+1-m, m]
-        for n in range(LMax-m):
-            for l in range(n+1, 2*(LMax-m)-n):
-                anm = get_anm(n+m, m)
-                alm = get_anm(l+m, m)
-                almm = get_anm(l-1+m, m)
-                anmm = get_anm(n-1+m, m)
-                print(l, n+1, l+m, anm, anmm, alm, almm)
-                if anmm != 0:
-                    print(l, n, m)
-                    efm[l, n+1] = (almm*efm[l-1, n] - alm*efm[l+1, n]
-                                   + anmm*efm[l, n-1])/anm
-                else:
-                    efm[l, n+1] = (alm*efm[l+1, n] - almm*efm[l-1, n])/anm
-        efms.append(efm)
-
-    for m in range(LMax+1):
-        efms[m] = efms[m][:LMax-m+1, :LMax-m+1]
-        lm = len(efms[m])
-        # Start from m since (E|F)^m matrix starts at (m,m) corner
-        nls = (np.arange(m, m+lm))
-        enl = np.transpose(efms[m])*np.outer((-1)**(nls), (-1)**(nls))
-        efms[m] += enl
-        efms[m] -= np.diag(np.diag(enl))
-
-    return eflm, efms
-
-
-def transl_newt_z_RR_recurs(LMax, dr):
-    """
-    Translate coaxially from regular to regular, Gumerov and Duraiswami.
-
-    Inputs
-    ------
-    l : int
-        Order of multipole expansion to output rotation matrix coefficient H
-
-    Reference
-    ---------
-    "Recursions for the computation of multipole translation and rotation
-    coefficients for the 3-d helmholtz equation."
-
-    https://arxiv.org/pdf/1403.7698v1.pdf
-    """
-    # Create (E|F)_{l,m}^{m}
-    eflm = np.zeros([2*LMax+1, LMax+1])
-    # Start (E|F)_{l, 0}^{0}
-    ls = np.arange(2*LMax+1)
-    eflm[:, 0] = (-1)**ls*np.sqrt(2*ls+1)*dr**ls/sp.factorial2(2*ls+1)
-    # now recursion 4.86 for (E|F)_{l, m}^{m}
-    for m in range(LMax):
-        for l in range(2*LMax-m):
-            # (n=m)
-            blmm = get_bnm(l, -m-1)
-            blmp = get_bnm(l+1, m)
-            bmm = get_bnm(m+1, -m-1)
-            eflm[l, m+1] = (eflm[l-1, m]*blmm - eflm[l+1, m]*blmp)/bmm
-
-    efms = []
-    # Now create (E|F)^m matrices (p-|m|)x(p-|m|)
-    # Start with (2*p-|m|)x(p-|m|) and truncate
-    for m in range(LMax+1):
-        efm = np.zeros([2*LMax+1-2*m, LMax-m+1])
-        efm[:, 0] = eflm[m:2*LMax+1-m, m]
-        for n in range(LMax-m):
-            for l in range(n+1, 2*(LMax-m)-n):
-                anm = get_anm(n+m, m)
-                alm = get_anm(l+m, m)
-                almm = get_anm(l-1+m, m)
-                anmm = get_anm(n-1+m, m)
-                print(l, n+1, l+m, anm, anmm, alm, almm)
-                if anmm != 0:
-                    print(l, n, m)
-                    efm[l, n+1] = (almm*efm[l-1, n] - alm*efm[l+1, n]
-                                   + anmm*efm[l, n-1])/anm
-                else:
-                    efm[l, n+1] = (alm*efm[l+1, n] - almm*efm[l-1, n])/anm
-        efms.append(efm)
-
-    for m in range(LMax+1):
-        efms[m] = efms[m][:LMax-m+1, :LMax-m+1]
-        lm = len(efms[m])
-        # Start from m since (E|F)^m matrix starts at (m,m) corner
-        nls = (np.arange(m, m+lm))
-        enl = np.transpose(efms[m])*np.outer((-1)**(nls), (-1)**(nls))
-        efms[m] += enl
-        efms[m] -= np.diag(np.diag(enl))
-
-    return eflm, efms
-
-
-def transl_newt_z_RR_recurs2(LMax, dr):
+def transl_newt_z_RR(LMax, dr):
     """
     Translate coaxially from regular to regular, Gumerov and Duraiswami. In a
     slight contradiction to the paper, our choice of normalization (alpha_n^m)
@@ -293,7 +167,7 @@ def transl_newt_z_RR_recurs2(LMax, dr):
     return rrms
 
 
-def transl_newt_z_SS_recurs2(LMax, dr):
+def transl_newt_z_SS(LMax, dr):
     """
     Translate coaxially from singular to singular, Gumerov and Duraiswami. In a
     slight contradiction to the paper, our choice of normalization (alpha_n^m)
@@ -324,7 +198,7 @@ def transl_newt_z_SS_recurs2(LMax, dr):
     return ssms
 
 
-def transl_newt_z_SR_recurs2(LMax, dr):
+def transl_newt_z_SR(LMax, dr):
     """
     Translate coaxially from regular to singular, Gumerov and Duraiswami. In a
     slight contradiction to the paper, our choice of normalization (alpha_n^m)
@@ -356,18 +230,45 @@ def transl_newt_z_SR_recurs2(LMax, dr):
 
 
 def alphanm(n, m):
-    anm = (-1)**n*1j**(-np.abs(m))*np.sqrt(4*np.pi/((2*n+1)*sp.factorial(n-m)*sp.factorial(n+m)))
+    """
+    Normalization function for inner moments in Gumerov & Duraiswami formalism.
+    """
+    anm = (-1)**n*1j**(-np.abs(m))
+    anm *= np.sqrt(4*np.pi/((2*n+1)*sp.factorial(n-m)*sp.factorial(n+m)))
     return anm
 
 
 def betanm(n, m):
-    bnm = 1j**(np.abs(m))*np.sqrt(4*np.pi*sp.factorial(n-m)*sp.factorial(n+m)/(2*n+1))
+    """
+    Normalization function for outer moments in Gumerov & Duraiswami formalism.
+    """
+    bnm = 1j**(np.abs(m))
+    bnm *= np.sqrt(4*np.pi*sp.factorial(n-m)*sp.factorial(n+m)/(2*n+1))
     return bnm
 
 
 def apply_trans_mat(qlm, efms):
+    """
+    Applies each set of the coaxial translation matrices which mix degree (l)
+    for fixed order (m).
+
+    Inputs
+    ------
+    qlm : ndarray
+        Complex multipole coefficients of shape (L+1)x(2L+1)
+    efms : list
+        List of (lxl) coaxial translation matrices, for each degree, (L, L-1,
+        ..., 1)
+
+    Returns
+    -------
+    qNew : ndarray
+        Coaxially translated complex multipole coeffcients of shape
+        (L+1)x(2L+1)
+    """
     L = len(qlm)-1
-    print(L)
+    if L != (len(efms)-1):
+        raise ValueError('Mis-matched multipole degree, l')
     qNew = np.zeros([L+1, 2*L+1], dtype='complex')
     qNew[:, L] = np.dot(efms[0], qlm[:, L])
     for m in range(1, L+1):
