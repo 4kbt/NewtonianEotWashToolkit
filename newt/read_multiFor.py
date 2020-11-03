@@ -215,15 +215,25 @@ def read_mpc(LMax, filename, filepath='C:\\mpc\\'):
             elif shape == 'trapezoid':
                 line2 = [float(val)*fac for val in lines[2+k].split(',')]
                 w1, w2, h, t = line2
+                if w2 < w1:
+                    w3, w4 = w2, w1
+                    flip = True
+                else:
+                    w3, w4 = w1, w2
+                    flip = False
                 dens = float(lines[3+k].split(',')[0])*1000
-                y1, y2 = w1/2, w2/2
-                hs = w1*h/(w2-w1)
+                y1, y2 = w3/2, w4/2
+                hs = w3*h/(w4-w3)
                 hb = h + hs
-                massTrib = dens*t*w2*hb/2
-                massTris = dens*t*w1*hs/2
-                qlmWrk = qlm.tri_iso_prism(LMax, massTris, t, w1, hs, 0)
-                qlmWrk -= qlm.tri_iso_prism2(LMax, massTrib, t, w2, hb, 0)
+                massTrib = dens*t*w4*hb/2
+                massTris = dens*t*w3*hs/2
+                print(hs, hb, w3, w4)
+                qlmWrk = qlm.tri_iso_prism(LMax, massTrib, t, w4, hb, 0)
+                qlmWrk -= qlm.tri_iso_prism(LMax, massTris, t, w3, hs, 0)
                 qlmWrk = trs.translate_qlm(qlmWrk, [-hs, 0, 0])
+                if flip:
+                    qlmWrk = trs.translate_qlm(qlmWrk, [-(hb-hs), 0, 0])
+                    qlmWrk = rot.rotate_qlm(qlmWrk, 0, 0, np.pi)
                 pos = np.array(lines[4+k].split(','), dtype=float)*fac
                 k += 3
                 if (pos == 0).all() and ('add' in lines[2+k]):

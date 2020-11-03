@@ -162,9 +162,9 @@ def cone(LMax, rho, h, r1, r2):
     h : float
         Total height along z axis. Centered about z=0.
     r1 : float
-        Radius of lower section of cone
-    r2 : float
         Radius of upper section of cone
+    r2 : float
+        Radius of lower section of cone
 
     Returns
     -------
@@ -212,6 +212,70 @@ def cone(LMax, rho, h, r1, r2):
     q5 = h**4 - 4*h**2*(3*r1**2 + r1*r2 + 3*r2**2)
     q5 += 5*(3*r1**4 + 2*r1**2*r2 + 4*r1**2*r2**2 + 2*r1*r2**3 + 3*r2**4)
     qlm[5, L] = fac*q5*h**2*(r1**2 - r2**2)*np.sqrt(11)/896
+
+    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
+    ms = np.arange(-L, L+1)
+    mfac = (-1)**(np.abs(ms))
+    qlm += np.conj(np.fliplr(qlm))*mfac
+    qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
+    return qlm
+
+
+def cone2(LMax, rho, h, r1, r2):
+    """
+    The (truncated) cone is specified by lower and upper radii, r1 and r2, and
+    height h>0 extending above the xy-plane. Complete cones have vanishing
+    values of r1 or r2. Moments given out to LMax=5.
+
+    Inputs
+    ------
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
+    rho : float
+        Density in kg/m^3
+    h : float
+        Total height along z axis. Centered about z=0.
+    r1 : float
+        Radius of lower section of cone
+    r2 : float
+        Radius of upper section of cone
+
+    Returns
+    -------
+    qlm : ndarray
+        (LMax+1)x(2LMax+1) complex array of inner moments
+    """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
+    qlm = np.zeros([L+1, 2*L+1], dtype='complex')
+    if (h <= 0) or ((r1 == 0) and (r2 == 0)):
+        raise ValueError('Unphysical parameter arguments')
+    fac = rho*np.sqrt(np.pi)
+    qlm[0, L] = fac*h*(r1**2 + r1*r2 + r2**2)/6
+    qlm[1, L] = fac*h**2*(r1**2 + 2*r1*r2 + 3*r2**2)/(8*np.sqrt(3))
+    q20 = 2*h**2*(r1**2 + 3*r1*r2 + 6*r2**2)
+    q20 -= 3*(r1**4 + 2*r1**3*r2 + 3*r1**2*r2**2 + r1*r2**3 + r2**4)
+    qlm[2, L] = fac*h*q20/(24*np.sqrt(5))
+    q3 = 2*h**2*(r1**2 + 4*r1*r2 + 10*r2**2)
+    q3 -= 3*(r1**4 + 2*r1**3*r2 + 3*r1**2*r2**2 + 4*r1*r2**3 + 5*r2**4)
+    qlm[3, L] = fac*h**2*q3*np.sqrt(7)/240
+    q4 = 8*h**4*(r1**2 + 5*r1*r2 + 15*r2**2)
+    q4 -= 12*h**2*(r1**4+3*r1**3*r2+6*r1**2*r2**2+10*r1*r2**3+15*r2**4)
+    q4 += 15*(r1**6 + r1**5*r2 + r1**4*r2**2 + r1**3*r2**3 + r1**2*r2**4)
+    q4 += 15*(r1*r2**5 + r2**6)
+    qlm[4, L] = fac*q4*h/560
+    q5 = 8*h**4*(r1**2 + 6*r1*r2 + 21*r2**2)
+    q5 -= 12*h**2*(r1**4 + 4*r1**3*r2 + 10*r1**2*r2**2 + 20*r1*r2**3)
+    q5 -= 12*h**2*(35*r2**4)
+    q5 += 15*(r1**6 + 2*r1**5*r2 + 3*r1**4*r2**2 + 4*r1**3*r2**3)
+    q5 += 15*(5*r1**2*r2**4 + 6*r1*r2**5 + 7*r2**6)
+    qlm[5, L] = fac*h**2*q5*np.sqrt(11)/2688
 
     # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
     ms = np.arange(-L, L+1)

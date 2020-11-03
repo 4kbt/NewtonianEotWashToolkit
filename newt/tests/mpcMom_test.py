@@ -85,7 +85,7 @@ def test_partcyl2():
 
 
 def test_trap():
-    testtrap = rmf.read_gsq('testtrap.gsq', MOMPATH)
+    testtrap = rmf.read_mpc(10, 'testtrap.mpc', MPCPATH)
     testtrap2 = rmf.read_gsq('testtrap.gsq', MOMPATH)
     assert (np.abs(testtrap - testtrap2) < 2e8*np.finfo(float).eps).all()
 
