@@ -32,6 +32,8 @@ def translate_qlm(qlm, rPrime):
     https://journals.aps.org/prd/abstract/10.1103/PhysRevD.55.7970
     """
     rP = np.sqrt(rPrime[0]**2+rPrime[1]**2+rPrime[2]**2)
+    if rP == 0:
+        return qlm
     phiP = np.arctan2(rPrime[1], rPrime[0])
     thetaP = np.arccos(rPrime[2]/rP)
     # Restrict LMax to size of qlm for now
@@ -91,9 +93,11 @@ def translate_Qlmb(Qlm, rPrime):
     https://journals.aps.org/prd/abstract/10.1103/PhysRevD.55.7970
     """
     rP = np.sqrt(rPrime[0]**2+rPrime[1]**2+rPrime[2]**2)
+    if rP == 0:
+        return Qlm
     phiP = np.arctan2(rPrime[1], rPrime[0])
     thetaP = np.arccos(rPrime[2]/rP)
-    # Restrict LMax to size of qlm for now
+    # Restrict LMax to size of Qlm for now
     LMax = np.shape(Qlm)[0] - 1
 
     # Conjugate spherical harmonics

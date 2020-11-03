@@ -129,6 +129,8 @@ def test_cone():
     Tests cone function vs explicit formula up to L=5.
     """
     con = qlm.cone(5, 1, 1, 1, 0, np.pi)
+    con4 = qlmA.cone2(5, 3/np.pi, 1, 1, 0)
+    assert (abs(con-con4) < 10*np.finfo(float).eps).all()
     con3 = rot.rotate_qlm(con, 0, np.pi, 0)
     con3 = trs.translate_qlm(con3, [0, 0, .5])
     con2 = qlmA.cone(5, 3/np.pi, 1, 1, 0)
