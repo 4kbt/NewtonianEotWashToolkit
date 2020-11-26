@@ -374,6 +374,179 @@ def tri_prism(LMax, rho, h, d, y1, y2):
     return qlm
 
 
+def trapezoid(LMax, rho, t, w1, w2, h):
+    """
+    The trapezoidal slab has reflection symmetry about the xy-plane and a
+    thickness t > 0. Two of its sides are parallel to y with lengths w1 and w2.
+    It is symmetric about x, i.e., the two parallel sides are centered at y=0
+    with separation h > 0. We define w = (w1+w2)/2 and delw = (w1-w2)/w. Values
+    are only known up to LMax=5. The density is given by rho.
+
+    Inputs
+    ------
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
+    rho : float
+        Density in kg/m^3
+    t : float
+        Total thickness along z axis. Centered about z=0.
+    w1 : float
+        Total length along y axis first side. Centered about y=0 at x=0.
+    w2 : float
+        Total width along y axis. Centered about y=0 at x=h.
+    h : float
+        Total height along x axis, separating parallel sides, h > 0.
+
+    Returns
+    -------
+    qlm : ndarray
+        (LMax+1)x(2LMax+1) complex array of inner moments
+    """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
+    qlm = np.zeros([L+1, 2*L+1], dtype='complex')
+    if (h <= 0) or (t <= 0) or (w1 < 0) or (w2 < 0):
+        raise ValueError('Unphysical parameter arguments')
+    w = (w1+w2)/2
+    delw = (w1-w2)/w
+    q00 = rho*h*t*w/np.sqrt(4*np.pi)
+    qlm[0, L] = q00
+    qlm[1, L+1] = q00*h*(delw-6)/(4*np.sqrt(6))
+    q20 = q00*(4*delw*h**2 - delw**2*w**2 - 4*(4*h**2-2*t**2+w**2))
+    qlm[2, L] = q20*np.sqrt(5)/96
+    q22 = -q00*(4*delw*h**2 + delw**2*w**2 - 4*(4*h**2-w**2))
+    qlm[2, L+2] = q22*np.sqrt(5/6)/32
+    q31 = 3*delw**3*w**2 - 30*delw**2*w**2 - 120*(6*h**2-4*t**2+w**2)
+    q31 += 4*delw*(54*h**2-20*t**2+15*w**2)
+    q31 *= -q00*np.sqrt(7/3)*h/3840
+    qlm[3, L+1] = q31
+    q33 = -delw**3*w**2 + 10*delw**2*w**2 + 4*delw*(6*h**2-5*w**2)
+    q33 -= 40*(2*h**2-w**2)
+    q33 *= q00*np.sqrt(7/5)*h/256
+    qlm[3, L+3] = q33
+    q40 = -24*delw**3*w**2*h**2 + 9*delw**4*w**4
+    q40 -= 32*delw*h**2*(24*h**2-20*t**2+15*w**2)
+    q40 += 8*delw**2*w**2*(24*h**2-20*t**2+15*w**2)
+    q40 += 16*(144*h**4+24*t**4-40*t**2*w**2+9*w**4-40*h**2*(4*t**2-w**2))
+    q40 *= q00/10240
+    qlm[4, L] = q40
+    q42 = 32*delw*(8*h**4-5*h**2*t**2) + 3*delw**4*w**4
+    q42 -= 40*delw**2*w**2*(t**2-w**2)
+    q42 -= 16*(4*h**2-w**2)*(12*h**2-10*t**2+3*w**2)
+    q42 *= q00/1024/np.sqrt(10)
+    qlm[4, L+2] = q42
+    q44 = 24*delw**3*w**2*h**2 + 3*delw**4*w**4
+    q44 -= delw*(256*h**4 - 480*h**2*w**2)
+    q44 -= delw**2*w**2*(192*h**2-40*w**2) + 16*(48*h**4-40*h**2*w**2+3*w**4)
+    q44 *= q00*np.sqrt(7/10)/2048
+    qlm[4, L+4] = q44
+    q51 = 3*delw**5*w**4 - 42*delw**4*w**4
+    q51 += 8*delw**3*w**2*(26*h**2-14*t**2+21*w**2)
+    q51 -= 224*(80*h**4+24*t**4-20*t**2*w**2+3*w**4-20*h**2*(6*t**2-w**2))
+    q51 -= 112*delw**2*w**2*(14*h**2-5*(2*t**2-w**2))
+    q51 += 16*delw*(400*h**4-252*h**2*(2*t**2-w**2))
+    q51 += 16*delw*(7*(8*t**4-20*t**2*w**2+5*w**4))
+    q51 *= q00*h*np.sqrt(11/30)/57344
+    qlm[5, L+1] = q51
+    q53 = -9*delw**5*w**4 + 126*delw**4*w**4
+    q53 += 112*delw**2*w**2*(14*h**2-20*t**2+15*w**2)
+    q53 -= 8*delw**3*w**2*(26*h**2-28*t**2+63*w**2)
+    q53 -= 224*(80*h**4+40*t**2*w**2-9*w**4-20*h**2*(4*t**2+w**2))
+    q53 += 16*delw*(400*h**4-84*h**2*(4*t**2+3*w**2)+35*(8*t**2*w**2-3*w**4))
+    q53 *= -q00*h*np.sqrt(11/35)/49152
+    qlm[5, L+3] = q53
+    q55 = 3*delw**5*w**4 - 42*delw**4*w**4 - delw**3*w**2*(208*h**2-168*w**2)
+    q55 += 112*delw**2*w**2*(14*h**2-5*w**2)
+    q55 += 16*delw*(80*h**4-252*h**2*w**2+35*w**4)
+    q55 -= 224*(16*h**4-20*h**2*w**2+3*w**4)
+    q55 *= q00*h*np.sqrt(11/7)/16384
+    qlm[5, L+5] = q55
+
+    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
+    ms = np.arange(-L, L+1)
+    mfac = (-1)**(np.abs(ms))
+    qlm += np.conj(np.fliplr(qlm))*mfac
+    qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
+    return qlm
+
+
+def cylindrical_section(LMax, rho, t, r, d):
+    """
+    Inner multipoles of a rectangular box centered on the origin and specified
+    by positive quantities x, y, and z - its dimensions along xhat, yhat, and
+    zhat. Values are only known up to LMax=5. The density is given by rho.
+
+    Inputs
+    ------
+    LMax : int
+        Maximum order of inner multipole moments. Only known to LMax=5.
+    rho : float
+        Density in kg/m^3
+    r : float
+        Radius of the cylinder
+    y : float
+        Distance along x
+    t : float
+        Total height along z axis. Centered about z=0.
+
+    Returns
+    -------
+    qlm : ndarray
+        (LMax+1)x(2LMax+1) complex array of inner moments
+    """
+    if LMax < 5:
+        L = 5
+    else:
+        L = LMax
+    qlm = np.zeros([L+1, 2*L+1], dtype='complex')
+    if (d <= 0) or (r <= d) or (t <= 0):
+        raise ValueError('Unphysical parameter arguments')
+    s = np.sqrt(1-(d/r)**2)
+    acdr = np.arccos(d/r)
+    r2d2 = r**2 - d**2
+    qlm[0, L] = rho*t*r*(r*acdr - s*d)/np.sqrt(4*np.pi)
+    qlm[1, L+1] = -rho*s*t*r*r2d2/np.sqrt(6*np.pi)
+    q20 = t*r*(s*d*(2*d**2-t**2+r**2) + r*(t**2-3*r**2)*acdr)
+    q20 *= rho*np.sqrt(5/np.pi)/24
+    qlm[2, L] = q20
+    qlm[2, L+2] = rho*np.sqrt(5/6/np.pi)*s*d*t*r*r2d2/2
+    qlm[3, L+1] = rho*s*t*r*r2d2*(6*d**2-5*t**2+9*r**2)*np.sqrt(7/3/np.pi)/60
+    qlm[3, L+3] = rho*s*t*r*r2d2*(r**2-6*d**2)*np.sqrt(7/5/np.pi)/12
+    q40 = -s*d*(16*d**4-20*d**2*t**2+3*t**4+2*(4*d**2-5*t**2)*r**2+6*r**4)
+    q40 += 3*r*(t**4-10*t**2*r**2+10*r**4)*acdr
+    q40 *= rho*t*r/np.sqrt(np.pi)/160
+    qlm[4, L] = q40
+    q42 = -rho*s*d*t*r*r2d2*(4*d**2-5*t**2+6*r**2)/(8*np.sqrt(10*np.pi))
+    qlm[4, L+2] = q42
+    qlm[4, L+4] = -rho*s*d*t*r*r2d2*(3*r**2-8*d**2)*np.sqrt(7/(10*np.pi))/8
+    q51 = -rho*s*t*r*r2d2*np.sqrt(11/(30*np.pi))/112
+    q51 *= 16*d**4 - 28*d**2*t**2 + 7*t**4 + 6*(4*d**2-7*t**2)*r**2 + 30*r**4
+    qlm[5, L+1] = q51
+    q53 = -rho*s*t*r*r2d2*np.sqrt(11/(35*np.pi))/144
+    q53 *= -48*d**4 - 14*t**2*r**2 + 15*r**4 + 12*d**2*(7*t**2-6*r**2)
+    qlm[5, L+3] = q53
+    q55 = -rho*s*t*r*r2d2*np.sqrt(11/(7*np.pi))/80
+    q55 *= 80*d**4 - 48*d**2*r**2 + 3*r**4
+    qlm[5, L+5] = q55
+
+    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
+    ms = np.arange(-L, L+1)
+    mfac = (-1)**(np.abs(ms))
+    qlm += np.conj(np.fliplr(qlm))*mfac
+    qlm[:, L] /= 2
+
+    # Truncate if LMax < 5
+    if LMax < 5:
+        qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
+    return qlm
+
+
 def tetrahedron(LMax, rho, x, y, z):
     """
     This shape consists of a tetrahedron having three mutually perpendicular
@@ -437,7 +610,7 @@ def tetrahedron(LMax, rho, x, y, z):
     q53 = 5*x**5-3j*x**4*y-x**3*y**2-1j*x**2*y**3-3*x*y**4+5j*y**5
     q53 -= 4*(x**2-y**2)*(x-1j*y)*z**2
     qlm[5, L+3] = q00*q53*np.sqrt(11/35)/128
-    #q54 = z**3*(x**4-1j*x**3*y-x**2*y**2+1j*x*y**3+y**4)
+    # q54 = z**3*(x**4-1j*x**3*y-x**2*y**2+1j*x*y**3+y**4)
     q54 = z*(x**4-1j*x**3*y-x**2*y**2+1j*x*y**3+y**4)
     qlm[5, L+4] = q00*q54*np.sqrt(11/70)*3/64
     q55 = (x-1j*y)*((x**2-y**2)**2 + x**2*y**2)

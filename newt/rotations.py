@@ -332,16 +332,16 @@ def rotate_qlm_Ds(qlm, ds):
 
 def Dlmn(l, m, n, alpha, beta, gamma):
     """
-    Compute the (m, n) term of the Wigner D matrix, D^l_{m,n} using an explicit
+    Compute the (n, m) term of the Wigner D matrix, D^l_{n,m} using an explicit
     formula.
 
     Inputs
     ------
     l : int
         Order of rotation matrix
-    m : int
-        New index within order of multipole coefficient
     n : int
+        New index within order of multipole coefficient (m' in reference)
+    m : int
         Old index within order of multipole coefficient
     alpha : float
         Angle in radians about z-axis
@@ -352,23 +352,25 @@ def Dlmn(l, m, n, alpha, beta, gamma):
 
     Returns
     -------
-    Dlmn : float
-        (m, n) entry in Wigner rotation matrix of order l
+    Dlnm : float
+        (n, m) entry in Wigner rotation matrix of order l
 
     References
     ----------
     https://en.wikipedia.org/wiki/Wigner_D-matrix
     """
-    Dlmn = 0
+    Dlnm = 0
     kmin = max([m-n, 0])
     kmax = min([l+m, l-n])
     for k in range(int(kmin), int(kmax)+1):
         val = (-1)**k*np.cos(beta/2)**(2*l+m-n-2*k)*np.sin(beta/2)**(n-m+2*k)
-        val /= (sp.factorial(k)*sp.factorial(l+m-k)*sp.factorial(l-n-k)*sp.factorial(n-m+k))
-        Dlmn += val
-    Dlmn *= np.exp(-1j*(alpha*n + gamma*m))*(-1)**(n-m)
-    Dlmn *= np.sqrt(sp.factorial(l-m)*sp.factorial(l+m)*sp.factorial(l-n)*sp.factorial(l+n))
-    return Dlmn
+        val /= (sp.factorial(k)*sp.factorial(l+m-k))
+        val /= (sp.factorial(l-n-k)*sp.factorial(n-m+k))
+        Dlnm += val
+    Dlnm *= np.exp(-1j*(alpha*n + gamma*m))*(-1)**(n-m)
+    Dlnm *= np.sqrt(sp.factorial(l-m)*sp.factorial(l+m))
+    Dlnm *= np.sqrt(sp.factorial(l-n)*sp.factorial(l+n))
+    return Dlnm
 
 
 def Dl(l, alpha, beta, gamma):
@@ -404,5 +406,5 @@ def Dl(l, alpha, beta, gamma):
     Dl = np.zeros([Nm, Nm], dtype=complex)
     for m in range(Nm):
         for n in range(Nm):
-            Dl[m, n] = Dlmn(l, -l + m, -l + n, alpha, beta, gamma)
+            Dl[n, m] = Dlmn(l, -l + m, -l + n, alpha, beta, gamma)
     return Dl

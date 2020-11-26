@@ -66,7 +66,9 @@ Not only that, but it's WAY FASTER! This portion is based largely on the
 private program, MULTIN, of Prof. Adelberger.
 
 A list of shapes can be found [here](newt/docs/shapes.md)
+
 Information on multipole methods can be found [here](newt/docs/multipoles.md)
+
 Example calculations are explained [here](newt/example/exampleMulti.md)
 
 ## References
@@ -111,7 +113,7 @@ We ask that anyone using this package cite this [reference][2]
 - [X] Multipole shapes adelberger
 - [X] multipole shape comparisons
 - [X] Multipole translation
-- [ ] Recursive translation matrices
+- [X] Recursive translation matrices
 - [X] More tests
 - [ ] Always more tests!
 - [ ] pip package
