@@ -63,6 +63,7 @@ def force_basis(L, x, y, z):
     return bX, bY, bZ
 
 
+
 def multipole_force(LMax, qlm, Qlmb, x, y, z):
     """
     Calculates the gravitational force from outer multipole moments Qlmb on
@@ -100,6 +101,46 @@ def multipole_force(LMax, qlm, Qlmb, x, y, z):
                     force[0] += fac2*bX[l-lo, LMax+m-mo]
                     force[1] += fac2*bY[l-lo, LMax+m-mo]
                     force[2] += fac2*bZ[l-lo, LMax+m-mo]
+
+    return force
+
+def multipole_force_m(LMax, qlm, Qlmb, x, y, z):
+    """
+    Calculates the gravitational force from outer multipole moments Qlmb on
+    inner multipole moments qlm centered at a position (x, y, z). The degree of
+    the moments should all match LMax. Based on the work of Stirling (2017).
+
+    Inputs
+    ------
+    qlm : ndarray
+        (L+1)x(2L+1) array of sensor (interior) lowest degree multipole moments.
+    Qlm : ndarray
+        (L+1)x(2L+1) array of sensor (outer) lowest degree multipole moments.
+
+    Returns
+    -------
+    nlm : ndarray
+        1x3 array of forces along x, y, z
+    """
+    bX, bY, bZ = force_basis(LMax, x, y, z)
+    force = np.zeros([3, 2*LMax+1], dtype='complex')
+    fac = 4*np.pi*BIG_G
+    for lo in range(LMax+1):
+        lofac = (2*lo+1)
+        for mo in range(-lo, lo+1):
+            gamlomo = sp.gammaln(lo+mo+1) + sp.gammaln(lo-mo+1)
+            mofac = qlm[lo, LMax+mo]*fac
+            for l in range(lo+1, LMax+1):
+                lp = l-lo
+                lfac = (2*l+1)
+                lmofac = mofac/lfac*np.sqrt(lfac/lofac)
+                for m in range(mo-lp, mo+lp+1):
+                    gamsum = sp.gammaln(l+m+1) + sp.gammaln(l-m+1)
+                    gamsum -= gamlomo
+                    fac2 = Qlmb[l, LMax+m]*lmofac*np.sqrt(np.exp(gamsum))
+                    force[0, mo] += fac2*bX[l-lo, LMax+m-mo]
+                    force[1, mo] += fac2*bY[l-lo, LMax+m-mo]
+                    force[2, mo] += fac2*bZ[l-lo, LMax+m-mo]
 
     return force
 
