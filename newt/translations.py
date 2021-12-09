@@ -139,7 +139,7 @@ def translate_Qlmb(Qlm, rPrime):
     return QLM
 
 
-def translate_q2Q(qlm, rPrime):
+def translate_q2Q(qlm, rPrime, LMax, cad=False):
     r"""
     Takes in an inner set of moments, q_lm, and returns the translated outer
     moments Q_LM. The translation vector is rPrime.
@@ -161,6 +161,9 @@ def translate_q2Q(qlm, rPrime):
     ----------
     https://journals.aps.org/prd/abstract/10.1103/PhysRevD.60.107501
     """
+    if cad:
+        qlm, mesh = qlm
+        mesh = gcad.translate_mesh(mesh, rPrime)
     rP = np.sqrt(rPrime[0]**2+rPrime[1]**2+rPrime[2]**2)
     phiP = np.arctan2(rPrime[1], rPrime[0])
     thetaP = np.arccos(rPrime[2]/rP)
@@ -196,4 +199,7 @@ def translate_q2Q(qlm, rPrime):
     fac = (-1)**(np.abs(ms))
     QLM += np.conj(np.fliplr(QLM))*fac
     QLM[:, LMax] /= 2
-    return QLM
+    if not cad:
+        return QLM
+    else:
+        return np.array([QLM, mesh], dtype=object)

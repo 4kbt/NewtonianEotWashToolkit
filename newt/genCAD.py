@@ -66,10 +66,10 @@ def annulus(H, Ri, Ro, phic, phih, res=None):
     -------
     mesh : madcad mesh
     """
-    vr1b = mc.vec3(Ri*np.cos(mc.radians(phic-phih)), Ri*np.sin(mc.radians(phic-phih)), -h/2)
-    vr1t = mc.vec3(Ri*np.cos(mc.radians(phic-phih)), Ri*np.sin(mc.radians(phic-phih)), h/2)
-    vr2b = mc.vec3(Ro*np.cos(mc.radians(phic-phih)), Ro*np.sin(mc.radians(phic-phih)), -h/2)
-    vr2t = mc.vec3(Ro*np.cos(mc.radians(phic-phih)), Ro*np.sin(mc.radians(phic-phih)), h/2)
+    vr1b = mc.vec3(Ri*np.cos(mc.radians(phic-phih)), Ri*np.sin(mc.radians(phic-phih)), -H/2)
+    vr1t = mc.vec3(Ri*np.cos(mc.radians(phic-phih)), Ri*np.sin(mc.radians(phic-phih)), H/2)
+    vr2b = mc.vec3(Ro*np.cos(mc.radians(phic-phih)), Ro*np.sin(mc.radians(phic-phih)), -H/2)
+    vr2t = mc.vec3(Ro*np.cos(mc.radians(phic-phih)), Ro*np.sin(mc.radians(phic-phih)), H/2)
     s = mc.flatsurface(mc.web([mc.Segment(vr1b,vr2b), mc.Segment(vr2b,vr2t), mc.Segment(vr2t,vr1t), mc.Segment(vr1t,vr1b)]))
     mesh = mc.revolution(mc.radians(2*phih),(mc.O,mc.Z),s,resolution=res)
     return mesh
@@ -137,7 +137,7 @@ def tri_iso_prism(H, a, d, phic):
     sa1a2 = mc.Segment(va1, va2)
     sa2o = mc.Segment(va2, mc.O)
     mesh = mc.flatsurface(mc.web([soa1, sa1a2, sa2o]))
-    mesh = mc.thicken(m, H, 0.5)
+    mesh = mc.thicken(mesh, H, 0.5)
     return mesh
 
 
@@ -169,7 +169,7 @@ def tri_iso_prism2(H, R, phic, phih):
     sR1R2 = mc.Segment(vR1, vR2)
     sR2o = mc.Segment(vR2, mc.O)
     mesh = mc.flatsurface(mc.web([soR1, sR1R2, sR2o]))
-    mesh = mc.thicken(m, H, 0.5)
+    mesh = mc.thicken(mesh, H, 0.5)
     return mesh
 
 
@@ -200,7 +200,7 @@ def tri_prism(H, d, y1, y2):
     sdy1dy2 = mc.Segment(vdy1, vdy2)
     sdy2o = mc.Segment(vdy2, mc.O)
     mesh = mc.flatsurface(mc.web([sody1, sdy1dy2, sdy2o]))
-    mesh = mc.thicken(m, H, 0.5)
+    mesh = mc.thicken(mesh, H, 0.5)
     return mesh
 
 
@@ -257,7 +257,7 @@ def trapezoid(w1, w2, H, thickness):
     s3 = mc.Segment(v3,v4)
     s4 = mc.Segment(v4,v1)
     mesh = mc.flatsurface(mc.web([s1,s2,s3,s4]))
-    mesh = mc.thicken(m, thickness, 0.5)
+    mesh = mc.thicken(mesh, thickness, 0.5)
     return mesh
 
 
@@ -296,7 +296,7 @@ def ngon_prism(H, a, phic, N):
         segments.append(mc.Segment(points[i], points[i+1]))
     segments.append(mc.Segment(points[-1],points[0]))
     mesh = mc.flatsurface(mc.web(segments))
-    mesh = mc.thicken(m, h, 0.5)
+    mesh = mc.thicken(mesh, h, 0.5)
     return mesh
 
 
