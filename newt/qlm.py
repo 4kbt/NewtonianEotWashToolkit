@@ -6,9 +6,10 @@ Created on Thu Aug 03 15:58:03 2017
 """
 import numpy as np
 import scipy.special as sp
+import genCAD as gcad
 
 
-def sphere(L, mass, R):
+def sphere(L, mass, R, cad=False):
     """
     A sphere with a given mass and radius, R, behaves exactly as a point mass.
     When placed at the origin, it trivially only gives rise to the q00 moment.
@@ -19,10 +20,10 @@ def sphere(L, mass, R):
         Maximum order for multipole expansion
     mass : float
         Mass of the cylinder
-    H : float
-        Total height of the cylinder
     R : float
         Radius of the cylinder
+    gcad : bool
+        If true returns tuple with mesh
 
     Returns
     -------
@@ -31,10 +32,13 @@ def sphere(L, mass, R):
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     qlm[0, L] = mass/np.sqrt((4*np.pi))
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.sphere(R)
 
 
-def cylinder(L, mass, H, R):
+def cylinder(L, mass, H, R, mcad, cad=False):
     """
     Recursive calculation for inner multipole moments of a cylinder symmetric
     around the z-axis and x,y-plane or height H and radius R. The result is
@@ -71,10 +75,13 @@ def cylinder(L, mass, H, R):
         for k in range(1, l//2+1):
             Slk[l, k] = -Slk[l, k-1]*(l-2*k+3)*(l-2*k+2)/((k+1)*k)*(R/H)**2
         qlm[l, L] = factor*np.sqrt(2*l+1)*np.sum(Slk[l])
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.cylinder(H, R)
 
 
-def annulus(L, mass, H, Ri, Ro, phic, phih):
+def annulus(L, mass, H, Ri, Ro, phic, phih, cad=False):
     """
     Only L-M even survive. We use the notation of Stirling and Schlamminger to
     compute the inner moments of an annular section. This is a non-recursive
@@ -130,10 +137,13 @@ def annulus(L, mass, H, Ri, Ro, phic, phih):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.annulus(H, Ri, Ro, phic, phih)
 
 
-def cone(L, mass, P, R, phic, phih):
+def cone(L, mass, P, R, phic, phih, cad=False):
     """
     We use the notation of Stirling and Schlamminger to compute the inner
     moments of a section of a cone of with apex at z=P and base radius of R.
@@ -181,10 +191,13 @@ def cone(L, mass, P, R, phic, phih):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.cone(P, R, phic, phih)
 
 
-def tri_iso_prism(L, mass, H, a, d, phic):
+def tri_iso_prism(L, mass, H, a, d, phic, cad=False):
     """
     The isosceles triangular prism has a height H and extends above and below
     the xy-plane by H/2. The triangular faces have vertices at (x,y)=(0,0),
@@ -244,10 +257,13 @@ def tri_iso_prism(L, mass, H, a, d, phic):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.tri_iso_prism(H, a, d, phic)
 
 
-def tri_iso_prism2(L, mass, H, R, phic, phih):
+def tri_iso_prism2(L, mass, H, R, phic, phih, cad=False):
     """
     The isosceles triangular prism has a height H and extends above and below
     the xy-plane by H/2. The triangular faces span an angle from phic-phih to
@@ -306,10 +322,13 @@ def tri_iso_prism2(L, mass, H, R, phic, phih):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.tri_iso_prism2(H, R, phic, phih)
 
 
-def tri_prism(L, mass, H, d, y1, y2):
+def tri_prism(L, mass, H, d, y1, y2, cad=False):
     """
     The triangular prism has a height H and extends above and below the
     xy-plane by H/2. The triangular faces have vertices at (x,y)=(0,0),
@@ -370,10 +389,13 @@ def tri_prism(L, mass, H, d, y1, y2):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.tri_prism(H, d, y1, y2)
 
 
-def rect_prism(L, mass, H, a, b, phic):
+def rect_prism(L, mass, H, a, b, phic, cad=False):
     """
     Rectangular prism centered on the origin with height H and sides of length
     a and b extending along the x and y axes respectively when phic=0.
@@ -432,10 +454,13 @@ def rect_prism(L, mass, H, a, b, phic):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.rect_prism(H, a, b, phic)
 
 
-def ngon_prism(L, mass, H, a, phic, N):
+def ngon_prism(L, mass, H, a, phic, N, cad=False):
     """
     Regular N-sided prism centered on the origin with height H with sides of
     length a. When phic=0, the first side is oriented parallel to the y-axis.
@@ -494,10 +519,13 @@ def ngon_prism(L, mass, H, a, phic, N):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.ngon_prism(H, a, phic, N)
 
 
-def tetrahedron(L, mass, x, y, z):
+def tetrahedron(L, mass, x, y, z, cad=False):
     """
     A tetrahedron having three mutually perpendicular triangular faces that
     meet at the origin. The fourth triangular face is defined by points at
@@ -553,10 +581,13 @@ def tetrahedron(L, mass, x, y, z):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.tetrahedron(x, y, z)
 
 
-def tetrahedron2(L, mass, x, y1, y2, z):
+def tetrahedron2(L, mass, x, y1, y2, z, cad=False):
     """
     A tetrahedron with vertices at (x,y,z) = (x,y1,0), (x,y2,0), (0,0,0), and
     (0,0,z).
@@ -613,10 +644,13 @@ def tetrahedron2(L, mass, x, y1, y2, z):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.tetrahedron2(x, y1, y2, z)
 
 
-def pyramid(L, mass, x, y, z):
+def pyramid(L, mass, x, y, z, cad=False):
     """
     A rectangular pyramid extending above the xy-plane by a height z. The
     rectangular base of the pyramid has vertices at (x,y) = (x, y), (x, -y),
@@ -677,7 +711,10 @@ def pyramid(L, mass, x, y, z):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    return qlm
+    if !cad:
+        return qlm
+    else:
+        return qlm, gcad.pyramid(x, y, z)
 
 
 def cyl_mom(L, M, dens, H, R):
