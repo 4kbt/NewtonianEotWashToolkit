@@ -6,7 +6,7 @@ Created on Thu Aug 03 15:58:03 2017
 """
 import numpy as np
 import scipy.special as sp
-import genCAD as gcad
+import newt.genCAD as gcad
 
 
 def sphere(L, mass, R, cad=False):
@@ -32,13 +32,13 @@ def sphere(L, mass, R, cad=False):
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     qlm[0, L] = mass/np.sqrt((4*np.pi))
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.sphere(R)
+        return np.array([qlm, gcad.sphere(R)], dtype=object)
 
 
-def cylinder(L, mass, H, R, mcad, cad=False):
+def cylinder(L, mass, H, R, cad=False):
     """
     Recursive calculation for inner multipole moments of a cylinder symmetric
     around the z-axis and x,y-plane or height H and radius R. The result is
@@ -75,10 +75,10 @@ def cylinder(L, mass, H, R, mcad, cad=False):
         for k in range(1, l//2+1):
             Slk[l, k] = -Slk[l, k-1]*(l-2*k+3)*(l-2*k+2)/((k+1)*k)*(R/H)**2
         qlm[l, L] = factor*np.sqrt(2*l+1)*np.sum(Slk[l])
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.cylinder(H, R)
+        return np.array([qlm, gcad.cylinder(H, R)], dtype=object)
 
 
 def annulus(L, mass, H, Ri, Ro, phic, phih, cad=False):
@@ -137,10 +137,10 @@ def annulus(L, mass, H, Ri, Ro, phic, phih, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.annulus(H, Ri, Ro, phic, phih)
+        return np.array([qlm, gcad.annulus(H, Ri, Ro, phic, phih)], dtype=object)
 
 
 def cone(L, mass, P, R, phic, phih, cad=False):
@@ -191,10 +191,10 @@ def cone(L, mass, P, R, phic, phih, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.cone(P, R, phic, phih)
+        return np.array([qlm, gcad.cone(P, R, phic, phih)], dtype=object)
 
 
 def tri_iso_prism(L, mass, H, a, d, phic, cad=False):
@@ -257,10 +257,10 @@ def tri_iso_prism(L, mass, H, a, d, phic, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.tri_iso_prism(H, a, d, phic)
+        return np.array([qlm, gcad.tri_iso_prism(H, a, d, phic)], dtype=object)
 
 
 def tri_iso_prism2(L, mass, H, R, phic, phih, cad=False):
@@ -322,10 +322,10 @@ def tri_iso_prism2(L, mass, H, R, phic, phih, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.tri_iso_prism2(H, R, phic, phih)
+        return np.array([qlm, gcad.tri_iso_prism2(H, R, phic, phih)], dtype=object)
 
 
 def tri_prism(L, mass, H, d, y1, y2, cad=False):
@@ -389,10 +389,10 @@ def tri_prism(L, mass, H, d, y1, y2, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.tri_prism(H, d, y1, y2)
+        return np.array([qlm, gcad.tri_prism(H, d, y1, y2)], dtype=object)
 
 
 def rect_prism(L, mass, H, a, b, phic, cad=False):
@@ -454,10 +454,10 @@ def rect_prism(L, mass, H, a, b, phic, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.rect_prism(H, a, b, phic)
+        return np.array([qlm, gcad.rect_prism(H, a, b, phic)], dtype=object)
 
 
 def ngon_prism(L, mass, H, a, phic, N, cad=False):
@@ -519,10 +519,10 @@ def ngon_prism(L, mass, H, a, phic, N, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.ngon_prism(H, a, phic, N)
+        return np.array([qlm, gcad.ngon_prism(H, a, phic, N)], dtype=object)
 
 
 def tetrahedron(L, mass, x, y, z, cad=False):
@@ -581,10 +581,10 @@ def tetrahedron(L, mass, x, y, z, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.tetrahedron(x, y, z)
+        return np.array([qlm, gcad.tetrahedron(x, y, z)], dtype=object)
 
 
 def tetrahedron2(L, mass, x, y1, y2, z, cad=False):
@@ -644,10 +644,10 @@ def tetrahedron2(L, mass, x, y1, y2, z, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.tetrahedron2(x, y1, y2, z)
+        return np.array([qlm, gcad.tetrahedron2(x, y1, y2, z)], dtype=object)
 
 
 def pyramid(L, mass, x, y, z, cad=False):
@@ -711,10 +711,10 @@ def pyramid(L, mass, x, y, z, cad=False):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if !cad:
+    if not cad:
         return qlm
     else:
-        return qlm, gcad.pyramid(x, y, z)
+        return np.array([qlm, gcad.pyramid(x, y, z)], dtype=object)
 
 
 def cyl_mom(L, M, dens, H, R):

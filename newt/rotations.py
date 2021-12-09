@@ -6,6 +6,7 @@ Created on Wed Feb 26 22:52:29 2020
 """
 import numpy as np
 import scipy.special as sp
+import newt.genCAD as gcad
 
 
 def rotate_H_recurs(p, beta, Hn_prev=None):
@@ -268,7 +269,7 @@ def wignerDl(LMax, alpha, beta, gamma):
     return ds
 
 
-def rotate_qlm(qlm, alpha, beta, gamma):
+def rotate_qlm(qlm, alpha, beta, gamma, cad=False):
     """
     Applies an arbitrary rotation given as Euler angles in z-y-z convention to
     a set of multipole moments of finite L. The rotations matrices are
@@ -291,6 +292,9 @@ def rotate_qlm(qlm, alpha, beta, gamma):
     qNew : ndarray, complex
         (L+1)x(2L+1) complex array of rotated multipole coefficients
     """
+    if cad:
+        qlm, mesh = qlm
+        mesh = gcad.rotate_mesh(mesh, alpha, beta, gamma)
     LMax = np.shape(qlm)[0] - 1
     qNew = np.copy(qlm)
     # XXX Should test to make sure really need to go to LMax+1 since H
@@ -298,7 +302,10 @@ def rotate_qlm(qlm, alpha, beta, gamma):
     ds = wignerDl(LMax+1, alpha, beta, gamma)
     for k in range(1, LMax+1):
         qNew[k, LMax-k:LMax+k+1] = np.dot(ds[k], qlm[k, LMax-k:LMax+k+1])
-    return qNew
+    if not cad:
+        return qNew
+    else:
+        return np.array([qlm, mesh], dtype=object)
 
 
 def rotate_qlm_Ds(qlm, ds):

@@ -7,9 +7,10 @@ Created on Sat Mar 21 13:45:28 2020
 import numpy as np
 import scipy.special as sp
 import newt.clebschGordan as cg
+import newt.genCAD as gcad
 
 
-def translate_qlm(qlm, rPrime):
+def translate_qlm(qlm, rPrime, LMax, cad=False):
     r"""
     Takes in an inner set of moments, q_lm, and returns the translated inner
     moments q_LM. The translation vector is rPrime.
@@ -25,19 +26,23 @@ def translate_qlm(qlm, rPrime):
     -------
     qLM : ndarray
         (l+1)x(2l+1) array of lowest order inner multipole moments. Moments are
-        for the translated moments by rPrime.
+        for the translated moments by rPrime. With cad option may be numpy array
+        with qlm array as the first element and a madcad mesh as the second
 
     References
     ----------
     https://journals.aps.org/prd/abstract/10.1103/PhysRevD.55.7970
     """
+    if cad:
+        qlm, mesh = qlm
+        mesh = gcad.translate_mesh(mesh, rPrime)
     rP = np.sqrt(rPrime[0]**2+rPrime[1]**2+rPrime[2]**2)
     if rP == 0:
         return qlm
     phiP = np.arctan2(rPrime[1], rPrime[0])
     thetaP = np.arccos(rPrime[2]/rP)
     # Restrict LMax to size of qlm for now
-    LMax = np.shape(qlm)[0] - 1
+    #LMax = np.shape(qlm)[0] - 1
 
     # Conjugate spherical harmonics
     ylmS = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
@@ -67,7 +72,10 @@ def translate_qlm(qlm, rPrime):
     fac = (-1)**(np.abs(ms))
     qLM += np.conj(np.fliplr(qLM))*fac
     qLM[:, LMax] /= 2
-    return qLM
+    if not cad:
+        return qLM
+    else:
+        return np.array([qlm, mesh], dtype=object)
 
 
 def translate_Qlmb(Qlm, rPrime):
