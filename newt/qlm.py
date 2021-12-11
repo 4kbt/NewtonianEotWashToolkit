@@ -35,7 +35,7 @@ def sphere(L, mass, R, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.sphere(R)], dtype=object)
+        return np.array([qlm, gcad.sphere(mass > 0, R)], dtype=object)
 
 
 def cylinder(L, mass, H, R, cad=False):
@@ -78,7 +78,7 @@ def cylinder(L, mass, H, R, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.cylinder(H, R)], dtype=object)
+        return np.array([qlm, gcad.cylinder(mass > 0, H, R)], dtype=object)
 
 
 def annulus(L, mass, H, Ri, Ro, phic, phih, cad=False):
@@ -140,7 +140,7 @@ def annulus(L, mass, H, Ri, Ro, phic, phih, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.annulus(H, Ri, Ro, phic, phih)], dtype=object)
+        return np.array([qlm, gcad.annulus(mass > 0, H, Ri, Ro, phic, phih)], dtype=object)
 
 
 def cone(L, mass, P, R, phic, phih, cad=False):
@@ -194,7 +194,7 @@ def cone(L, mass, P, R, phic, phih, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.cone(P, R, phic, phih)], dtype=object)
+        return np.array([qlm, gcad.cone(mass > 0, P, R, phic, phih)], dtype=object)
 
 
 def tri_iso_prism(L, mass, H, a, d, phic, cad=False):
@@ -260,7 +260,7 @@ def tri_iso_prism(L, mass, H, a, d, phic, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.tri_iso_prism(H, a, d, phic)], dtype=object)
+        return np.array([qlm, gcad.tri_iso_prism(mass > 0, H, a, d, phic)], dtype=object)
 
 
 def tri_iso_prism2(L, mass, H, R, phic, phih, cad=False):
@@ -325,7 +325,7 @@ def tri_iso_prism2(L, mass, H, R, phic, phih, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.tri_iso_prism2(H, R, phic, phih)], dtype=object)
+        return np.array([qlm, gcad.tri_iso_prism2(mass > 0, H, R, phic, phih)], dtype=object)
 
 
 def tri_prism(L, mass, H, d, y1, y2, cad=False):
@@ -392,7 +392,7 @@ def tri_prism(L, mass, H, d, y1, y2, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.tri_prism(H, d, y1, y2)], dtype=object)
+        return np.array([qlm, gcad.tri_prism(mass > 0, H, d, y1, y2)], dtype=object)
 
 
 def rect_prism(L, mass, H, a, b, phic, cad=False):
@@ -457,7 +457,7 @@ def rect_prism(L, mass, H, a, b, phic, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.rect_prism(H, a, b, phic)], dtype=object)
+        return np.array([qlm, gcad.rect_prism(mass > 0, H, a, b, phic)], dtype=object)
 
 
 def ngon_prism(L, mass, H, a, phic, N, cad=False):
@@ -522,7 +522,7 @@ def ngon_prism(L, mass, H, a, phic, N, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.ngon_prism(H, a, phic, N)], dtype=object)
+        return np.array([qlm, gcad.ngon_prism(mass > 0, H, a, phic, N)], dtype=object)
 
 
 def tetrahedron(L, mass, x, y, z, cad=False):
@@ -584,7 +584,7 @@ def tetrahedron(L, mass, x, y, z, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.tetrahedron(x, y, z)], dtype=object)
+        return np.array([qlm, gcad.tetrahedron(mass > 0, x, y, z)], dtype=object)
 
 
 def tetrahedron2(L, mass, x, y1, y2, z, cad=False):
@@ -647,7 +647,7 @@ def tetrahedron2(L, mass, x, y1, y2, z, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.tetrahedron2(x, y1, y2, z)], dtype=object)
+        return np.array([qlm, gcad.tetrahedron2(mass > 0, x, y1, y2, z)], dtype=object)
 
 
 def pyramid(L, mass, x, y, z, cad=False):
@@ -714,7 +714,7 @@ def pyramid(L, mass, x, y, z, cad=False):
     if not cad:
         return qlm
     else:
-        return np.array([qlm, gcad.pyramid(x, y, z)], dtype=object)
+        return np.array([qlm, gcad.pyramid(mass > 0, x, y, z)], dtype=object)
 
 
 def cyl_mom(L, M, dens, H, R):

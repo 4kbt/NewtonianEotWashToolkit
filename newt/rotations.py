@@ -294,7 +294,12 @@ def rotate_qlm(qlm, alpha, beta, gamma, cad=False):
     """
     if cad:
         qlm, mesh = qlm
-        mesh = gcad.rotate_mesh(mesh, alpha, beta, gamma)
+        if hasattr(mesh, '__iter__'):
+            for i in len(mesh):
+                mesh[i] = gcad.rotate_mesh(mesh[i], alpha, beta, gamma)
+
+        else:
+            mesh = gcad.rotate_mesh(mesh, alpha, beta, gamma)
     LMax = np.shape(qlm)[0] - 1
     qNew = np.copy(qlm)
     # XXX Should test to make sure really need to go to LMax+1 since H
