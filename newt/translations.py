@@ -10,8 +10,8 @@ import newt.clebschGordan as cg
 import newt.genCAD as gcad
 
 
-def translate_qlm(qlm, rPrime, LMax):
-    r"""
+def translate_qlm(qlm, rPrime):
+    """
     Takes in an inner set of moments, q_lm, and returns the translated inner
     moments q_LM. The translation vector is rPrime.
 
@@ -42,7 +42,7 @@ def translate_qlm(qlm, rPrime, LMax):
     phiP = np.arctan2(rPrime[1], rPrime[0])
     thetaP = np.arccos(rPrime[2]/rP)
     # Restrict LMax to size of qlm for now
-    #LMax = np.shape(qlm)[0] - 1
+    LMax = np.shape(qlm)[0] - 1
 
     # Conjugate spherical harmonics
     ylmS = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
@@ -139,7 +139,7 @@ def translate_Qlmb(Qlm, rPrime):
     return QLM
 
 
-def translate_q2Q(qlm, rPrime, LMax):
+def translate_q2Q(qlm, rPrime):
     r"""
     Takes in an inner set of moments, q_lm, and returns the translated outer
     moments Q_LM. The translation vector is rPrime.

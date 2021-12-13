@@ -6,6 +6,7 @@ Created on Wed Apr 29 20:09:40 2020
 """
 import numpy as np
 import scipy.special as sp
+import newt.genCAD as gcad
 
 
 def rect_prism(LMax, rho, x, y, z):
@@ -58,7 +59,10 @@ def rect_prism(LMax, rho, x, y, z):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        return np.array([qlm, gcad.rect_prism(rho > 0, z, x, y, 0)], dtype=object)
 
 
 def annulus(LMax, rho, H, Ri, Ro, phic, phih):
@@ -143,7 +147,10 @@ def annulus(LMax, rho, H, Ri, Ro, phic, phih):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        return np.array([qlm, gcad.annulus(rho > 0, H, Ri, Ro, phic, phih)], dtype=object)
 
 
 def cone(LMax, rho, h, r1, r2):
@@ -222,7 +229,11 @@ def cone(LMax, rho, h, r1, r2):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        mesh = gcad.translate_mesh(gcad.cone(rho > 0, h, r1, r2, 0, np.pi),[0,0,-h/2])
+        return np.array([qlm, mesh], dtype=object)
 
 
 def cone2(LMax, rho, h, r1, r2):
@@ -286,7 +297,11 @@ def cone2(LMax, rho, h, r1, r2):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        mesh = gcad.translate_mesh(gcad.cone(rho > 0, h, r2, r1, 0, np.pi),[0,0,-h/2])
+        return np.array([qlm, mesh], dtype=object)
 
 
 def tri_prism(LMax, rho, h, d, y1, y2):
@@ -371,7 +386,10 @@ def tri_prism(LMax, rho, h, d, y1, y2):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        return np.array([qlm, gcad.tri_prism(rho > 0, h, d, y1, y2)], dtype=object)
 
 
 def trapezoid(LMax, rho, t, w1, w2, h):
@@ -473,7 +491,10 @@ def trapezoid(LMax, rho, t, w1, w2, h):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        return np.array([qlm, gcad.trapezoid(rho > 0, t, w1, w2, h)], dtype=object)
 
 
 def cylindrical_section(LMax, rho, t, r, d):
@@ -625,7 +646,10 @@ def tetrahedron(LMax, rho, x, y, z):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        return np.array([qlm, gcad.tetrahedron(mass > 0, x, y, z)], dtype=object)
 
 
 def cylhole(LMax, rho, r, R):
@@ -682,7 +706,10 @@ def cylhole(LMax, rho, r, R):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        return np.array([qlm, gcad.cylhole(rho > 0, r, R)], dtype=object)
 
 
 def cylhole2(LMax, rho, r, R):
@@ -747,7 +774,10 @@ def cylhole2(LMax, rho, r, R):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        return np.array([qlm, gcad.cylhole(rho > 0, r, R)], dtype=object)
 
 
 def platehole(LMax, rho, t, r, theta):
@@ -809,7 +839,10 @@ def platehole(LMax, rho, t, r, theta):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        return np.array([qlm, gcad.platehole(rho > 0, t, r, theta)], dtype=object)
 
 
 def pyramid(LMax, rho, h, x, y):
@@ -873,4 +906,7 @@ def pyramid(LMax, rho, h, x, y):
     # Truncate if LMax < 5
     if LMax < 5:
         qlm = qlm[:LMax+1, L-LMax:L+LMax+1]
-    return qlm
+    if not gcad.enabled:
+        return qlm
+    else:
+        return np.array([qlm, gcad.pyramid(rho > 0, x, y, h)], dtype=object)

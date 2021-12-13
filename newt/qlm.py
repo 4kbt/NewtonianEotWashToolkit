@@ -194,7 +194,7 @@ def cone(L, mass, P, R, phic, phih):
     if not gcad.enabled:
         return qlm
     else:
-        return np.array([qlm, gcad.cone(mass > 0, P, R, phic, phih)], dtype=object)
+        return np.array([qlm, gcad.cone(mass > 0, P, 0, R, phic, phih)], dtype=object)
 
 
 def tri_iso_prism(L, mass, H, a, d, phic):
