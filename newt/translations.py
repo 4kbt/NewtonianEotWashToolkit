@@ -10,7 +10,7 @@ import newt.clebschGordan as cg
 import newt.genCAD as gcad
 
 
-def translate_qlm(qlm, rPrime, LMax, cad=False):
+def translate_qlm(qlm, rPrime, LMax):
     r"""
     Takes in an inner set of moments, q_lm, and returns the translated inner
     moments q_LM. The translation vector is rPrime.
@@ -33,7 +33,7 @@ def translate_qlm(qlm, rPrime, LMax, cad=False):
     ----------
     https://journals.aps.org/prd/abstract/10.1103/PhysRevD.55.7970
     """
-    if cad:
+    if gcad.enabled:
         qlm, mesh = qlm
         mesh = gcad.translate_mesh(mesh, rPrime)
     rP = np.sqrt(rPrime[0]**2+rPrime[1]**2+rPrime[2]**2)
@@ -72,7 +72,7 @@ def translate_qlm(qlm, rPrime, LMax, cad=False):
     fac = (-1)**(np.abs(ms))
     qLM += np.conj(np.fliplr(qLM))*fac
     qLM[:, LMax] /= 2
-    if not cad:
+    if not gcad.enabled:
         return qLM
     else:
         return np.array([qlm, mesh], dtype=object)
@@ -139,7 +139,7 @@ def translate_Qlmb(Qlm, rPrime):
     return QLM
 
 
-def translate_q2Q(qlm, rPrime, LMax, cad=False):
+def translate_q2Q(qlm, rPrime, LMax):
     r"""
     Takes in an inner set of moments, q_lm, and returns the translated outer
     moments Q_LM. The translation vector is rPrime.
@@ -161,7 +161,7 @@ def translate_q2Q(qlm, rPrime, LMax, cad=False):
     ----------
     https://journals.aps.org/prd/abstract/10.1103/PhysRevD.60.107501
     """
-    if cad:
+    if gcad.enabled:
         qlm, mesh = qlm
         mesh = gcad.translate_mesh(mesh, rPrime)
     rP = np.sqrt(rPrime[0]**2+rPrime[1]**2+rPrime[2]**2)
@@ -199,7 +199,7 @@ def translate_q2Q(qlm, rPrime, LMax, cad=False):
     fac = (-1)**(np.abs(ms))
     QLM += np.conj(np.fliplr(QLM))*fac
     QLM[:, LMax] /= 2
-    if not cad:
+    if not gcad.enabled:
         return QLM
     else:
         return np.array([QLM, mesh], dtype=object)

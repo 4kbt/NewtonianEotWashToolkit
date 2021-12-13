@@ -137,7 +137,7 @@ def anm(n, m):
 
 
 def rfac(n, m):
-    r"""
+    """
     Computes a ratio of factorials, hopefully somewhat more leniently for
     larger values. This also handles an array of inputs. This is not a
     combinatoric binomial coefficient.
@@ -269,7 +269,7 @@ def wignerDl(LMax, alpha, beta, gamma):
     return ds
 
 
-def rotate_qlm(qlm, alpha, beta, gamma, cad=False):
+def rotate_qlm(qlm, alpha, beta, gamma):
     """
     Applies an arbitrary rotation given as Euler angles in z-y-z convention to
     a set of multipole moments of finite L. The rotations matrices are
@@ -292,14 +292,9 @@ def rotate_qlm(qlm, alpha, beta, gamma, cad=False):
     qNew : ndarray, complex
         (L+1)x(2L+1) complex array of rotated multipole coefficients
     """
-    if cad:
+    if gcad.enabled:
         qlm, mesh = qlm
-        if hasattr(mesh, '__iter__'):
-            for i in len(mesh):
-                mesh[i] = gcad.rotate_mesh(mesh[i], alpha, beta, gamma)
-
-        else:
-            mesh = gcad.rotate_mesh(mesh, alpha, beta, gamma)
+        mesh = gcad.rotate_mesh(mesh, alpha, beta, gamma)
     LMax = np.shape(qlm)[0] - 1
     qNew = np.copy(qlm)
     # XXX Should test to make sure really need to go to LMax+1 since H
@@ -307,7 +302,7 @@ def rotate_qlm(qlm, alpha, beta, gamma, cad=False):
     ds = wignerDl(LMax+1, alpha, beta, gamma)
     for k in range(1, LMax+1):
         qNew[k, LMax-k:LMax+k+1] = np.dot(ds[k], qlm[k, LMax-k:LMax+k+1])
-    if not cad:
+    if not gcad.enabled:
         return qNew
     else:
         return np.array([qlm, mesh], dtype=object)
