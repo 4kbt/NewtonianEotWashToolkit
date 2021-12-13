@@ -106,12 +106,12 @@ def cone(pmass, H, r1, r2, phic, phih):
     if r1 == 0:        
         result = (cq.Workplane("XZ")
             .lineTo(r2, 0).lineTo(0, H)
-            .close().revolve(2*phih,(0,0,0),(0,1,0))
+            .close().revolve(2*phih*180/np.pi,(0,0,0),(0,1,0))
         )
     else:
         result = (cq.Workplane("XZ")
             .lineTo(r2,0).lineTo(r1,H).lineTo(0,H)
-            .close().revolve(2*phih,(0,0,0),(0,1,0))
+            .close().revolve(2*phih*180/np.pi,(0,0,0),(0,1,0))
         )
     result.pmass = pmass
     result = rotate_mesh(result, phic-phih, 0, 0)
@@ -536,7 +536,7 @@ def rotate_mesh(mesh, alpha, beta, gamma):
 
     Returns
     -------
-    newmesh: madcad mesh
+    result: CadQuery object
     """
     pmass = mesh.pmass
     result = mesh.rotate((0,0,0), (0,0,1), alpha*180/np.pi)
@@ -569,11 +569,11 @@ def save_stl(mesh, name):
     name : name of output file
     Returns
     -------
-    None. Ourputs file
+    None. Outputs file
     """
     if hasattr(mesh, '__iter__'):
         tmpmesh = sum_mesh(mesh)
-        cq.exporters.export(tmpmesh, f"{name}.stl", angularTolerance=.01)
+        cq.exporters.export(tmpmesh, f"{name}.stl",tolerance=.01)
 
     else:
-        cq.exporters.export(mesh, f"{name}.stl", angularTolerance=.01)
+        cq.exporters.export(mesh, f"{name}.stl",tolerance=.01)
