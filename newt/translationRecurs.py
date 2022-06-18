@@ -7,6 +7,7 @@ Created on Thu Apr 23 08:16:19 2020
 import numpy as np
 import scipy.special as sp
 import scipy.linalg as sla
+import newt.rotations as rot
 
 
 def transl_yuk_z_SR_recurs(LMax, dr, k):
@@ -298,3 +299,60 @@ def get_anm(n, m):
     else:
         aval = np.sqrt((n+am+1)*(n-am+1)/((2*n+1)*(2*n+3)))
     return aval
+
+
+def translate_qlm(qlm, rvec):
+    lmax = len(qlm) - 1
+    r = np.sqrt(rvec[0]**2 + rvec[1]**2 + rvec[2]**2)
+    rrms = transl_newt_z_RR(lmax, r)
+    if r == 0:
+        qlmp = np.copy(qlm)
+    elif r == rvec[2]:
+        phi, theta = 0, 0
+        qlmp = apply_trans_mat(qlm, rrms)
+    else:
+        phi = np.arctan2(rvec[1], rvec[0])
+        theta = np.arccos(rvec[2]/r)
+        Ds = rot.wignerDl(lmax, -phi, -theta, -phi)
+        qm1r = rot.rotate_qlm_Ds(qlm, Ds)
+        qlmp = apply_trans_mat(qm1r, rrms)
+        qlmp = rot.rotate_qlm_Ds(qlmp, Ds, True)
+    return qlmp
+
+
+def translate_Qlmb(Qlm, rvec):
+    lmax = len(Qlm) - 1
+    r = np.sqrt(rvec[0]**2 + rvec[1]**2 + rvec[2]**2)
+    ssms = transl_newt_z_SS(lmax, r)
+    if r == 0:
+        Qlmp = np.copy(Qlm)
+    elif r == rvec[2]:
+        phi, theta = 0, 0
+        Qlmp = apply_trans_mat(Qlm, ssms)
+    else:
+        phi = np.arctan2(rvec[1], rvec[0])
+        theta = np.arccos(rvec[2]/r)
+        Ds = rot.wignerDl(lmax, -phi, -theta, -phi)
+        qm1r = rot.rotate_qlm_Ds(Qlm, Ds)
+        Qlmp = apply_trans_mat(qm1r, ssms)
+        Qlmp = rot.rotate_qlm_Ds(Qlmp, Ds, True)
+    return Qlmp
+
+
+def translate_q2Q(qlm, rvec):
+    lmax = len(qlm) - 1
+    r = np.sqrt(rvec[0]**2 + rvec[1]**2 + rvec[2]**2)
+    srms = transl_newt_z_SR(lmax, r)
+    if r == 0:
+        Qlmp = np.copy(qlm)
+    elif r == rvec[2]:
+        phi, theta = 0, 0
+        Qlmp = apply_trans_mat(qlm, srms)
+    else:
+        phi = np.arctan2(rvec[1], rvec[0])
+        theta = np.arccos(rvec[2]/r)
+        Ds = rot.wignerDl(lmax, -phi, -theta, -phi)
+        qm1r = rot.rotate_qlm_Ds(qlm, Ds)
+        Qlmp = apply_trans_mat(qm1r, srms)
+        Qlmp = rot.rotate_qlm_Ds(Qlmp, Ds, True)
+    return Qlmp
