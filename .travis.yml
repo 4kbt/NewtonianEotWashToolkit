@@ -16,7 +16,7 @@ before_install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
   - conda install -c conda-forge -c cadquery cadquery=2
-  - conda install nptyping=1.4.4
+  - conda install nptyping=1.4.4 -c conda-forge
   - pip install -U pip
   - pip install -U wheel
   - pip install -U pytest
