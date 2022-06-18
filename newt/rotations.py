@@ -6,7 +6,6 @@ Created on Wed Feb 26 22:52:29 2020
 """
 import numpy as np
 import scipy.special as sp
-import newt.genCAD as gcad
 
 
 def rotate_H_recurs(p, beta, Hn_prev=None):
@@ -49,18 +48,17 @@ def rotate_H_recurs(p, beta, Hn_prev=None):
             H.append(Hk)
 
         # Compute H_n^{1,m} from H_n^{0,m}'s (step 3)
-        for k in range(1, p+1):
-            b0 = bnm(k+1, 0)
-            ms = np.arange(1, k+1)
-            bsM = bnm(k+1, -ms-1)
-            bsP = bnm(k+1, ms-1)
-            as0 = anm(k, ms)
-            H[k][k+1, k+1:] = (bsM[:]*(1-cb)/2.*H[k+1][k+1, k+3:]
-                               - bsP[:]*(1+cb)/2.*H[k+1][k+1, k+1:-2]
-                               - as0[:]*sb*H[k+1][k+1, k+2:-1])/b0
-
-        # steps 4 & 5
         for n in range(1, p+1):
+            b0 = bnm(n+1, 0)
+            ms = np.arange(1, n+1)
+            bsM = bnm(n+1, -ms-1)
+            bsP = bnm(n+1, ms-1)
+            as0 = anm(n, ms)
+            H[n][n+1, n+1:] = (bsM[:]*(1-cb)/2.*H[n+1][n+1, n+3:]
+                               - bsP[:]*(1+cb)/2.*H[n+1][n+1, n+1:-2]
+                               - as0[:]*sb*H[n+1][n+1, n+2:-1])/b0
+
+            # steps 4 & 5
             # step 5
             # H_n^{-mp,m}'s rely on H_n^{0,m}'s and H_n^{1,m}'s and recursion
             # step 5, mp=0 first
@@ -68,36 +66,41 @@ def rotate_H_recurs(p, beta, Hn_prev=None):
             fac = dnm(n, -mp)
             fac2 = dnm(n, -mp-1)
             ms = np.arange(mp, n-1)
+            dnms0 = dnm(n, ms)
+            dnmsp0 = dnm(n, ms+1)
+            dnmn = dnm(n, n-1)
             H[n][n-mp-1, n+mp+1:-1] = (fac*H[n][n-mp+1, n+mp+1:-1]
-                                       + dnm(n, ms)*H[n][n-mp, n+mp:-2]
-                                       - dnm(n, ms+1)*H[n][n-mp, n+mp+2:])/fac2
+                                       + dnms0*H[n][n-mp, n+mp:-2]
+                                       - dnmsp0*H[n][n-mp, n+mp+2:])/fac2
 
             H[n][n-mp-1, -1] = (fac*H[n][n-mp+1, -1]
-                                + dnm(n, n-1)*H[n][n-mp, -2])/fac2
+                                + dnmn*H[n][n-mp, -2])/fac2
             for mp in range(1, n):
                 fac = dnm(n, -mp)
                 fac2 = dnm(n, -mp-1)
                 ms = np.arange(mp, n-1)
+                dnms = dnms0[mp:]
+                dnmsp = dnmsp0[mp:]
                 H[n][n-mp-1, n+mp+1:-1] = (fac*H[n][n-mp+1, n+mp+1:-1]
-                                           + dnm(n, ms)*H[n][n-mp, n+mp:-2]
-                                           - dnm(n, ms+1)*H[n][n-mp, n+mp+2:])/fac2
+                                           + dnms*H[n][n-mp, n+mp:-2]
+                                           - dnmsp*H[n][n-mp, n+mp+2:])/fac2
                 # Handling endpoint stable with other recursion formula
                 H[n][n-mp-1, -1] = (fac*H[n][n-mp+1, -1]
-                                    + dnm(n, n-1)*H[n][n-mp, -2])/fac2
+                                    + dnmn*H[n][n-mp, -2])/fac2
 
                 # step 4
                 fac = dnm(n, mp-1)
                 fac2 = dnm(n, mp)
                 H[n][n+mp+1, n+mp+1:-1] = (fac*H[n][n+mp-1, n+mp+1:-1]
-                                           - dnm(n, ms)*H[n][n+mp, n+mp:-2]
-                                           + dnm(n, ms+1)*H[n][n+mp, n+mp+2:])/fac2
+                                           - dnms*H[n][n+mp, n+mp:-2]
+                                           + dnmsp*H[n][n+mp, n+mp+2:])/fac2
                 # Handling endpoint stable with other recursion formula
                 H[n][n+mp+1, -1] = (fac*H[n][n+mp-1, -1]
-                                    - dnm(n, n-1)*H[n][n+mp, -2])/fac2
+                                    - dnmn*H[n][n+mp, -2])/fac2
 
             # Copy upper triangular to lower triangular
             # H_n^{mp,m} = H_n^{m,mp}
-            H[n] = H[n] + np.transpose(H[n]) - np.diag(np.diag(H[n]))
+            H[n] = copy_tri(H[n])
             # Copy lower right triangular to upper left triangular
             H[n] = np.rot90(copy_tri(np.rot90(H[n], -1)), 1)
 
@@ -292,9 +295,6 @@ def rotate_qlm(qlm, alpha, beta, gamma):
     qNew : ndarray, complex
         (L+1)x(2L+1) complex array of rotated multipole coefficients
     """
-    if gcad.enabled:
-        qlm, mesh = qlm
-        mesh = gcad.rotate_mesh(mesh, alpha, beta, gamma)
     LMax = np.shape(qlm)[0] - 1
     qNew = np.copy(qlm)
     # XXX Should test to make sure really need to go to LMax+1 since H
@@ -302,13 +302,10 @@ def rotate_qlm(qlm, alpha, beta, gamma):
     ds = wignerDl(LMax+1, alpha, beta, gamma)
     for k in range(1, LMax+1):
         qNew[k, LMax-k:LMax+k+1] = np.dot(ds[k], qlm[k, LMax-k:LMax+k+1])
-    if not gcad.enabled:
-        return qNew
-    else:
-        return np.array([qlm, mesh], dtype=object)
+    return qNew
 
 
-def rotate_qlm_Ds(qlm, ds):
+def rotate_qlm_Ds(qlm, ds, conj_trans=False):
     """
     Applies a set of multipole rotation matrices to a set of multipole moments.
     The number of matrices should match the maximum degree of the moments. This
@@ -333,7 +330,11 @@ def rotate_qlm_Ds(qlm, ds):
         print('Rotation matrix dimension mismatch')
     else:
         for k in range(1, LMax+1):
-            qNew[k, LMax-k:LMax+k+1] = np.dot(ds[k], qlm[k, LMax-k:LMax+k+1])
+            if conj_trans:
+                d_use = ds[k].T.conj()
+            else:
+                d_use = ds[k]
+            qNew[k, LMax-k:LMax+k+1] = np.dot(d_use, qlm[k, LMax-k:LMax+k+1])
     return qNew
 
 
