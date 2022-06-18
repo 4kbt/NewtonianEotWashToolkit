@@ -274,9 +274,9 @@ def trapezoid(pmass, t, w1, w2, h):
     result : CadQuery object
     """
     result = (cq.Workplane("XY")
-        .rect(w1, thickness)
-        .workplane(offset=H)
-        .rect(w2, thickness)
+        .rect(w1, t)
+        .workplane(offset=h)
+        .rect(w2, t)
         .loft()
     )
     result.pmass = pmass
@@ -422,7 +422,7 @@ def pyramid(pmass, x, y, z):
     -------
     result : CadQuery object
     """
-    vertices = [[x/2,y/2,0], [x/2,-y/2,0], [-x/2,-y/2,0], [-x/2,y/2,0] [0,0,z]]
+    vertices = [[x/2,y/2,0], [x/2,-y/2,0], [-x/2,-y/2,0], [-x/2,y/2,0], [0,0,z]]
     faces_ixs = [[0,1,2,3,0], [0,1,4,0], [1,2,4,1], [2,3,4,2], [3,0,4,3]]
 
     faces = []
@@ -499,6 +499,37 @@ def platehole(pmass, t, r, theta):
     result.pmass = pmass
     return result
 
+
+def outercone(pmass, H, IR, OR, phih):
+    """
+    Cone with apex at z=P and base radius of R.
+
+    Inputs
+    ------
+    pmass : bool
+        bool that indicates whether mesh has positive mass
+    H : float
+        Height of the cone section above the xy-plane
+    IR : float
+        Inner radius of cone
+    OR : float
+        Outer radius of cone
+    phih : float
+        Half of the total angular span of the cone section, in radians
+
+    Returns
+    -------
+    result : CadQuery object
+    """
+    if IR >= 0:
+        raise ValueError('IR must be greater than 0.')
+    else:
+        result = (cq.Workplane("XZ")
+            .lineTo(OR,0).lineTo(IR,H).lineTo(IR,0)
+            .close().revolve(2*phih*180/np.pi,(0,0,0),(0,1,0))
+        )
+    result.pmass = pmass
+    return result
 
 
 def translate_mesh(mesh, rPrime):
