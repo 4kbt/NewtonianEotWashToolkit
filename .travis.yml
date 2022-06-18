@@ -3,6 +3,17 @@ python:
   - "3.6"
 before_install:
   - python --version
+  # https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/use-conda-with-travis-ci.html
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda install -c conda-forge -c cadquery cadquery=2
+  - conda instal nptyping=1.4.4
   - pip install -U pip
   - pip install -U wheel
   - pip install -U pytest
@@ -11,6 +22,7 @@ install:
   - pip install numpy
   - pip install scipy
   - pip install matplotlib
+  - pip install numpy-stl
   - pip install -e . # install package + test dependencies (blog.travis-ci.com/2019-08-07-extensive-python-testing-on-travis-ci
 # command to run tests
 script:
