@@ -6,7 +6,6 @@ Created on Thu Aug 03 15:58:03 2017
 """
 import numpy as np
 import scipy.special as sp
-import newt.genCAD as gcad
 
 
 def sphere(L, mass, R):
@@ -32,10 +31,7 @@ def sphere(L, mass, R):
     """
     qlm = np.zeros([L+1, 2*L+1], dtype='complex')
     qlm[0, L] = mass/np.sqrt((4*np.pi))
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.sphere(mass > 0, R)], dtype=object)
+    return qlm
 
 
 def cylinder(L, mass, H, R):
@@ -75,10 +71,7 @@ def cylinder(L, mass, H, R):
         for k in range(1, l//2+1):
             Slk[l, k] = -Slk[l, k-1]*(l-2*k+3)*(l-2*k+2)/((k+1)*k)*(R/H)**2
         qlm[l, L] = factor*np.sqrt(2*l+1)*np.sum(Slk[l])
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.cylinder(mass > 0, H, R)], dtype=object)
+    return qlm
 
 
 def annulus(L, mass, H, Ri, Ro, phic, phih):
@@ -137,10 +130,7 @@ def annulus(L, mass, H, Ri, Ro, phic, phih):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.annulus(mass > 0, H, Ri, Ro, phic, phih)], dtype=object)
+    return qlm
 
 
 def cone(L, mass, P, R, phic, phih):
@@ -191,10 +181,7 @@ def cone(L, mass, P, R, phic, phih):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.cone(mass > 0, P, 0, R, phic, phih)], dtype=object)
+    return qlm
 
 
 def tri_iso_prism(L, mass, H, a, d, phic):
@@ -257,10 +244,7 @@ def tri_iso_prism(L, mass, H, a, d, phic):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.tri_iso_prism(mass > 0, H, a, d, phic)], dtype=object)
+    return qlm
 
 
 def tri_iso_prism2(L, mass, H, R, phic, phih):
@@ -322,10 +306,7 @@ def tri_iso_prism2(L, mass, H, R, phic, phih):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.tri_iso_prism2(mass > 0, H, R, phic, phih)], dtype=object)
+    return qlm
 
 
 def tri_prism(L, mass, H, d, y1, y2):
@@ -389,10 +370,7 @@ def tri_prism(L, mass, H, d, y1, y2):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.tri_prism(mass > 0, H, d, y1, y2)], dtype=object)
+    return qlm
 
 
 def rect_prism(L, mass, H, a, b, phic):
@@ -454,10 +432,7 @@ def rect_prism(L, mass, H, a, b, phic):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.rect_prism(mass > 0, H, a, b, phic)], dtype=object)
+    return qlm
 
 
 def ngon_prism(L, mass, H, a, phic, N):
@@ -519,10 +494,7 @@ def ngon_prism(L, mass, H, a, phic, N):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.ngon_prism(mass > 0, H, a, phic, N)], dtype=object)
+    return qlm
 
 
 def tetrahedron(L, mass, x, y, z):
@@ -581,10 +553,7 @@ def tetrahedron(L, mass, x, y, z):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.tetrahedron(mass > 0, x, y, z)], dtype=object)
+    return qlm
 
 
 def tetrahedron2(L, mass, x, y1, y2, z):
@@ -644,10 +613,7 @@ def tetrahedron2(L, mass, x, y1, y2, z):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.tetrahedron2(mass > 0, x, y1, y2, z)], dtype=object)
+    return qlm
 
 
 def pyramid(L, mass, x, y, z):
@@ -711,10 +677,7 @@ def pyramid(L, mass, x, y, z):
     mfac = (-1)**(np.abs(ms))
     qlm += np.conj(np.fliplr(qlm))*mfac
     qlm[:, L] /= 2
-    if not gcad.enabled:
-        return qlm
-    else:
-        return np.array([qlm, gcad.pyramid(mass > 0, x, y, z)], dtype=object)
+    return qlm
 
 
 def cyl_mom(L, M, dens, H, R):
