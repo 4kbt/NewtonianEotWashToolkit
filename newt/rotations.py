@@ -217,7 +217,7 @@ def dlmn(LMax, beta):
     epsmmp = epsm(-ms)
     epsmm = epsm(ms)
     efac = np.outer(epsmm, epsmmp)*fac
-    for l in range(LMax):
+    for l in range(LMax+1):
         ds[l] *= efac[LMax-l:LMax+l+1, LMax-l:LMax+l+1]
     return ds
 
@@ -266,7 +266,7 @@ def wignerDl(LMax, alpha, beta, gamma):
     epsmm = epsm(ms)
     expfac = np.outer(expa, expg)
     efac = np.outer(epsmm, epsmmp)*expfac*fac
-    for l in range(LMax):
+    for l in range(LMax+1):
         ds[l] = ds[l].astype('complex')
         ds[l] *= efac[LMax-l:LMax+l+1, LMax-l:LMax+l+1]
     return ds

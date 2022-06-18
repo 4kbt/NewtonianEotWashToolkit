@@ -30,14 +30,14 @@ def gmmr2_array(mass1, mass2):
     """
     if np.ndim(mass2) == 1:
         # Which way does the force act
-        rvec = mass2[1:]-mass1[1:]
+        rvec = mass2[1:4]-mass1[1:4]
         # Pythagoras for modulus
         r = np.sqrt(np.sum(rvec**2))
         # Compute force
         force = rvec.T.dot(BIG_G*mass1[0]*mass2[0]/r**3)
     else:
         # Which way does the force act
-        rvec = mass2[:, 1:]-mass1[1:]
+        rvec = mass2[:, 1:4]-mass1[1:4]
         # Pythagoras for modulus
         r = np.sqrt(np.sum(rvec**2, 1))
         # compute force
@@ -69,7 +69,7 @@ def yukawa_array(mass1, mass2, alpha, lmbd):
     coef = alpha*BIG_G*mass1[0]
     if np.ndim(mass2) == 1:
         # Which way does the force act
-        rvec = mass2[1:]-mass1[1:]
+        rvec = mass2[1:4]-mass1[1:4]
         # Pythagoras for modulus
         r = np.sqrt(np.sum(rvec**2))
         # Compute force
@@ -77,7 +77,7 @@ def yukawa_array(mass1, mass2, alpha, lmbd):
         force = rvec.T.dot(coef*mass2[0]*np.exp(-r/lmbd)*fac)
     else:
         # Which way does the force act
-        rvec = mass2[:, 1:]-mass1[1:]
+        rvec = mass2[:, 1:4]-mass1[1:4]
         # Pythagoras for modulus
         r = np.sqrt(np.sum(rvec**2, 1))
         # compute force
@@ -111,11 +111,11 @@ def point_matrix_gravity(mass1, mass2):
 
     if np.ndim(mass1) == 1:
         force = gmmr2_array(mass1, mass2)
-        torque = np.cross(mass1[1:], force)
+        torque = np.cross(mass1[1:4], force)
     else:
         for k in range(len(mass1)):
             forceK = gmmr2_array(mass1[k, :], mass2)
-            torqueK = np.cross(mass1[k, 1:], forceK)
+            torqueK = np.cross(mass1[k, 1:4], forceK)
 
             force += forceK
             torque += torqueK
@@ -155,7 +155,7 @@ def point_matrix_yukawa(mass1, mass2, alpha, lmbd):
     else:
         for k in range(len(mass1)):
             forceK = yukawa_array(mass1[k, :], mass2, alpha, lmbd)
-            torqueK = np.cross(mass1[k, 1:], forceK)
+            torqueK = np.cross(mass1[k, 1:4], forceK)
 
             force += forceK
             torque += torqueK
@@ -182,11 +182,11 @@ def translate_point_array(pointMass, transVec):
     if np.ndim(pointMass) == 1:
         transArray = np.zeros(4)
         transArray[0] = pointMass[0]
-        transArray[1:] = pointMass[1:]+transVec
+        transArray[1:4] = pointMass[1:4]+transVec
     else:
         transArray = np.zeros([len(pointMass), 4])
         transArray[:, 0] = pointMass[:, 0]
-        transArray[:, 1:] = pointMass[:, 1:]+transVec
+        transArray[:, 1:4] = pointMass[:, 1:4]+transVec
 
     return transArray
 
@@ -211,12 +211,11 @@ def rotate_point_array(pointMass, theta, rotVec):
     if np.ndim(pointMass) == 1:
         rotArray = np.zeros(4)
         rotArray[0] = pointMass[0]
-        rotArray[1:] = R.dot(pointMass[1:])
+        rotArray[1:4] = R.dot(pointMass[1:4])
     else:
         rotArray = np.zeros([len(pointMass), 4])
         rotArray[:, 0] = pointMass[:, 0]
-        for k in range(len(pointMass)):
-            rotArray[k, 1:] = R.dot(pointMass[k, 1:])
+        rotArray[:, 1:4] = np.dot(R, pointMass[:, 1:4].T).T
 
     return rotArray
 
