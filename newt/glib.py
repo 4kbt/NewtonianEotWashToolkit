@@ -8,8 +8,7 @@ Scribe: John Greendeer Lee
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-
-BIG_G = 6.67428e-11
+from newt.constants import BIG_G
 
 
 def gmmr2_array(mass1, mass2):

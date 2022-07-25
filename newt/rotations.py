@@ -338,6 +338,40 @@ def rotate_qlm_Ds(qlm, ds, conj_trans=False):
     return qNew
 
 
+def rotate_qlm_Ds_right(qlm, ds, conj_trans=False):
+    """
+    Right multiply a set of multipole rotation matrices to multipole moments.
+
+    The number of matrices should match the maximum degree of the moments. This
+    method is useful for applying the same rotation matrix many times.
+
+    Inputs
+    ------
+    qlm : ndarray, complex
+        (L+1)x(2L+1) complex array of multipole coefficients
+    ds : list of ndarray
+        List of length L+1 with complex matrices of dimension
+        [1x1, 3x3, ..., (2L+1)x(2L+1)]
+
+    Returns
+    -------
+    qNew : ndarray, complex
+        (L+1)x(2L+1) complex array of rotated multipole coefficients
+    """
+    LMax = np.shape(qlm)[0] - 1
+    qNew = np.copy(qlm)
+    if LMax != len(ds)-1:
+        print('Rotation matrix dimension mismatch')
+    else:
+        for k in range(1, LMax+1):
+            if conj_trans:
+                d_use = ds[k].T.conj()
+            else:
+                d_use = ds[k]
+            qNew[k, LMax-k:LMax+k+1] = np.dot(d_use.T, qlm[k, LMax-k:LMax+k+1])
+    return qNew
+
+
 def Dlmn(l, m, n, alpha, beta, gamma):
     """
     Compute the (n, m) term of the Wigner D matrix, D^l_{n,m} using an explicit

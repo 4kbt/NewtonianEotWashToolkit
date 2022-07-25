@@ -41,7 +41,7 @@ tm = trs.translate_q2Q(tm, [dx, dy, 0])
 # Figure out the force at different rotor angles
 nAng = 120
 forces = np.zeros([nAng, 3], dtype='complex')
-nlm, nc, ns = mplb.torque_lm(LMax, arctot, tm)
+nlm, nc, ns = mplb.torque_lm(arctot, tm)
 dphi = 2*np.pi/nAng
 # Now rotate the cylindrical test-masses through various angles and calculate
 # the forces
