@@ -278,6 +278,38 @@ def apply_trans_mat(qlm, efms):
     return qNew
 
 
+def apply_trans_mat_right(qlm, efms):
+    """
+    Apply coaxial translation matrices by right multiplication.
+
+    The coaxial translation matrices mix degree (l) for fixed order (m).
+
+    Inputs
+    ------
+    qlm : ndarray
+        Complex multipole coefficients of shape (L+1)x(2L+1)
+    efms : list
+        List of (lxl) coaxial translation matrices, for each degree, (L, L-1,
+        ..., 1)
+
+    Returns
+    -------
+    qNew : ndarray
+        Coaxially translated complex multipole coeffcients of shape
+        (L+1)x(2L+1)
+    """
+    L = len(qlm)-1
+    if L != (len(efms)-1):
+        raise ValueError('Mis-matched multipole degree, l')
+    qNew = np.zeros([L+1, 2*L+1], dtype='complex')
+    qNew[:, L] = np.dot(efms[0].T, qlm[:, L])
+    for m in range(1, L+1):
+        efmsmT = efms[m].T
+        qNew[m:, L+m] = np.dot(efmsmT, qlm[m:, L+m])
+        qNew[m:, L-m] = np.dot(efmsmT, qlm[m:, L-m])
+    return qNew
+
+
 def get_bnm(n, m):
     """
     B-recursion function for translation matrices.

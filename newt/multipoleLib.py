@@ -6,8 +6,9 @@ Created on Sat May  9 15:09:17 2020
 """
 import numpy as np
 import scipy.special as sp
-
-BIG_G = 6.67428e-11
+from newt.constants import BIG_G
+import newt.rotations as rot
+import newt.translationRecurs as trr
 
 
 def force_basis(L, x, y, z):
@@ -64,7 +65,7 @@ def force_basis(L, x, y, z):
 
 
 
-def multipole_force(LMax, qlm, Qlmb, x, y, z):
+def multipole_force(LMax, qlm, Qlmb, x, y, z, cnst=BIG_G):
     """
     Calculates the gravitational force from outer multipole moments Qlmb on
     inner multipole moments qlm centered at a position (x, y, z). The degree of
@@ -84,7 +85,7 @@ def multipole_force(LMax, qlm, Qlmb, x, y, z):
     """
     bX, bY, bZ = force_basis(LMax, x, y, z)
     force = np.zeros(3, dtype='complex')
-    fac = 4*np.pi*BIG_G
+    fac = 4*np.pi*cnst
     for lo in range(LMax+1):
         lofac = (2*lo+1)
         for mo in range(-lo, lo+1):
@@ -104,7 +105,7 @@ def multipole_force(LMax, qlm, Qlmb, x, y, z):
 
     return force
 
-def multipole_force_m(LMax, qlm, Qlmb, x, y, z):
+def multipole_force_m(LMax, qlm, Qlmb, x, y, z, cnst=BIG_G):
     """
     Calculates the gravitational force from outer multipole moments Qlmb on
     inner multipole moments qlm centered at a position (x, y, z). The degree of
@@ -124,7 +125,7 @@ def multipole_force_m(LMax, qlm, Qlmb, x, y, z):
     """
     bX, bY, bZ = force_basis(LMax, x, y, z)
     force = np.zeros([3, 2*LMax+1], dtype='complex')
-    fac = 4*np.pi*BIG_G
+    fac = 4*np.pi*cnst
     for lo in range(LMax+1):
         lofac = (2*lo+1)
         for mo in range(-lo, lo+1):
@@ -145,7 +146,7 @@ def multipole_force_m(LMax, qlm, Qlmb, x, y, z):
     return force
 
 
-def torque_lm(L, qlm, Qlm):
+def torque_lm(qlm, Qlm, cnst=BIG_G):
     r"""
     Returns all gravitational torque_lm moments up to L, computed from sensor
     and source multipole moments. It assumes the sensor (interior) moments sit
@@ -187,8 +188,111 @@ def torque_lm(L, qlm, Qlm):
     ls = np.arange(minL+1)
     lfac = 1/(2*ls+1)
     ms = np.arange(-minL, minL+1)
-    nlm = 4*np.pi*BIG_G*1j*np.outer(lfac, ms)*qlm*Qlm
+    nlm = -4*np.pi*cnst*1j*np.outer(lfac, ms)*qlm*Qlm
 
+    nm = np.sum(nlm, 0)
+    nc = nm[minL:] + nm[minL::-1]
+    ns = nm[minL:] - nm[minL::-1]
+
+    return nlm, nc, ns
+
+
+def torque(qlm, Qlm, euler, rvec, trans_type='inner-inner', cnst=BIG_G):
+    r"""
+    Return all gravitational torque_lm moments up to order L.
+
+    Computed from sensor and source multipole moments.
+
+    .. math::
+        \bar{q_{lm}} = q_{lm}e^{-im\phi_{TT}}
+    Then the torque is given by
+
+    .. math::
+        \tau = -4\pi i G \sum_{l=0}^{\infty}\frac{1}{2l+1}
+        \sum_{m=-l}^{l}m\ q_{lm}Q_{lm}e^{-im\phi_{TT}}
+
+    .. math::
+        = 4\pi i G \sum_{l=0}^{\infty}\frac{1}{2l+1}\sum_{m=0}^{l}m\
+        (q*_{lm}Q*_{lm}e^{im\phi_{TT}} - q_{lm}Q_{lm}e^{-im\phi_{TT}})
+
+    Since the indices l and m are identical, we may simply do an element-wise
+    multiplication and sum along rows.
+
+    Inputs
+    ------
+    qlm : ndarray, complex
+        (L+1)x(2L+1) array of sensor (interior) lowest degree multipole moments
+    Qlm : ndarray, complex
+        (L+1)x(2L+1) array of source (exterior) lowest degree multipole moments
+
+    Returns
+    -------
+    nlm : ndarray, complex
+        (L+1)x(2L+1) array of torque multipole moments.
+    nc : ndarray, complex
+    ns : ndarray, complex
+    """
+    lqlm = len(qlm)
+    lQlm = len(Qlm)
+    minL = min([lqlm, lQlm])-1
+
+    ls = np.arange(minL+1)
+    lfac = 1/(2*ls+1)
+    ms = np.arange(-minL, minL+1)
+
+    alpha, beta, gamma = euler
+    DsR = rot.wignerDl(minL, alpha, beta, gamma)
+    qnew = np.copy(qlm)
+    Qnew = np.copy(Qlm)
+    r = np.sqrt(rvec[0]**2 + rvec[1]**2 + rvec[2]**2)
+    if trans_type == 'inner-inner':
+        Qnew *= np.outer(lfac, ms)
+        if r == 0:
+            Qnew = rot.rotate_qlm_Ds_right(Qnew, DsR)
+        elif r == rvec[2]:
+            phi, theta = 0, 0
+            rrms = trr.transl_newt_z_RR(minL, r)
+            Qnew = trr.apply_trans_mat_right(Qnew, rrms)
+            Qnew = rot.rotate_qlm_Ds_right(Qnew, DsR)
+        else:
+            phi = np.arctan2(rvec[1], rvec[0])
+            theta = np.arccos(rvec[2]/r)
+            Ds = rot.wignerDl(minL, -phi, -theta, -phi)
+            rrms = trr.transl_newt_z_RR(minL, r)
+            # Translate and rotate in opposite order than applied to q
+            Qnew = rot.rotate_qlm_Ds_right(Qnew, Ds, True)
+            Qnew = trr.apply_trans_mat_right(Qnew, rrms)
+            Qnew = rot.rotate_qlm_Ds_right(Qnew, Ds)
+            Qnew = rot.rotate_qlm_Ds_right(Qnew, DsR)
+    elif trans_type == 'inner-outer' or trans_type == 'outer-outer':
+        qnew *= np.outer(lfac, ms)
+        if r == 0:
+            qnew = rot.rotate_qlm_Ds_right(qnew, DsR)
+        elif r == rvec[2]:
+            phi, theta = 0, 0
+            if trans_type == 'inner-outer':
+                sms = trr.transl_newt_z_SR(minL, r)
+            else:
+                sms = trr.transl_newt_z_SS(minL, r)
+            qnew = trr.apply_trans_mat_right(qnew, sms)
+            qnew = rot.rotate_qlm_Ds_right(qnew, DsR)
+        else:
+            phi = np.arctan2(rvec[1], rvec[0])
+            theta = np.arccos(rvec[2]/r)
+            Ds = rot.wignerDl(minL, -phi, -theta, -phi)
+            if trans_type == 'inner-outer':
+                sms = trr.transl_newt_z_SR(minL, r)
+            else:
+                sms = trr.transl_newt_z_SS(minL, r)
+            # Translate and rotate in opposite order than applied to q
+            qnew = rot.rotate_qlm_Ds_right(qnew, Ds, True)
+            qnew = trr.apply_trans_mat_right(qnew, sms)
+            qnew = rot.rotate_qlm_Ds_right(qnew, Ds)
+            qnew = rot.rotate_qlm_Ds_right(qnew, DsR)
+    else:
+        raise ValueError(f"No translation of type {trans_type}")
+
+    nlm = -4*np.pi*cnst*1j*qnew*Qnew
     nm = np.sum(nlm, 0)
     nc = nm[minL:] + nm[minL::-1]
     ns = nm[minL:] - nm[minL::-1]

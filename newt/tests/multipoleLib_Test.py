@@ -106,9 +106,9 @@ def test_quadrupole_torque():
         Qlmb = pgm.Qmomentsb(L, Q)
         tau[k] = 2*mplb.BIG_G*M*m*d*R*np.sin(a)
         tau[k] *= 1/(d2R2-2*d*R*ca)**(3/2) - 1/(d2R2+2*d*R*ca)**(3/2)
-        tlm, tc[k], ts[k] = mplb.torque_lm(L, qlm, Qlmb)
-    # XXX should be np.sum(tc, 1)-tau, but existing sign error!
-    assert(abs(np.sum(tc, 1)+tau) < 10*np.finfo(float).eps).all()
+        tlm, tc[k], ts[k] = mplb.torque_lm(qlm, Qlmb)
+    # Check that torque from multipoles matches analytic
+    assert(abs(np.sum(tc, 1)-tau) < 10*np.finfo(float).eps).all()
 
 
 def test_hexapole_torque():
@@ -148,6 +148,179 @@ def test_hexapole_torque():
         tau[k] += np.sin(a+2*np.pi/3)/(d2R2-2*d*R*np.cos(a+2*np.pi/3))**(3/2)
         tau[k] += np.sin(a+4*np.pi/3)/(d2R2-2*d*R*np.cos(a+4*np.pi/3))**(3/2)
         tau[k] *= fac
-        tlm, tc[k], ts[k] = mplb.torque_lm(L, qlm, Qlmb)
-    # XXX should be np.sum(tc, 1)-tau, but existing sign error!
-    assert(abs(np.sum(tc, 1)+tau) < 10*np.finfo(float).eps).all()
+        tlm, tc[k], ts[k] = mplb.torque_lm(qlm, Qlmb)
+    # Check that torque from multipoles matches analytic
+    assert(abs(np.sum(tc, 1)-tau) < 10*np.finfo(float).eps).all()
+
+
+def test_torque_a():
+    """
+    Z-torque from rotating inner moments about x-axis, no translation
+
+    Tests
+    -----
+    torque
+    """
+    # Rotating inner moments about x-axis, z-torque on inner
+    m0 = np.array([[1, 1, 0, 0], [1, -1, 0, 0]])
+    m1 = np.array([[1, .5, 2, 0], [1, -.5, -2, 0]])
+    m0b = glb.rotate_point_array(m0, np.pi/2, [0, 1, 0])
+
+    angles = np.arange(0, 360, 10)*np.pi/180
+    torques_z = np.zeros(len(angles))
+
+    # Compute as moments immediately
+    L = 20
+    d0 = pgm.qmoments(L, m0)
+    d1 = pgm.Qmomentsb(L, m1)
+    tx, tcx, tsx = mplb.torque(d0, d1, [0, np.pi/2, 0], [0, 0, 0])
+    signal = np.real(tcx[0])/2
+    for k in range(1, L+1):
+        signal += np.real(tcx[k])*np.cos(k*angles)
+        signal += np.imag(tcx[k])*np.sin(k*angles)
+
+    for k, angle in enumerate(angles):
+        m0b2 = glb.rotate_point_array(m0b, angle, [1, 0, 0])
+        _, torq = glb.point_matrix_gravity(m0b2, m1)
+        torques_z[k] = torq[2]
+    assert(abs(torques_z-signal) < 10*np.finfo(float).eps).all()
+
+
+def test_torque_b():
+    """
+    Z-torque from rotating outer moments about x-axis, no translation
+
+    Tests
+    -----
+    torque
+    """
+    # Rotating outer moments about x-axis, z-torque on inner
+    m0 = np.array([[1, 1, .5, 0], [1, -1, -.5, 0]])
+    m1 = np.array([[1, 0, 2, 0], [1, 0, -2, 0]])
+    m1b = glb.rotate_point_array(m1, np.pi/2, [0, 1, 0])
+
+    angles = np.arange(0, 360, 10)*np.pi/180
+    torques_z = np.zeros(len(angles))
+
+    # Compute as moments immediately
+    L = 20
+    d0 = pgm.qmoments(L, m0)
+    d1 = pgm.Qmomentsb(L, m1)
+    tx, tcx, tsx = mplb.torque(d0, d1, [0, np.pi/2, 0], [0, 0, 0],
+                               'outer-outer')
+    signal = np.real(tcx[0])/2
+    for k in range(1, L+1):
+        signal += np.real(tcx[k])*np.cos(k*angles)
+        signal += np.imag(tcx[k])*np.sin(k*angles)
+
+    for k, angle in enumerate(angles):
+        m1b2 = glb.rotate_point_array(m1b, angle, [1, 0, 0])
+        #m1b2 = glb.translate_point_array(m1b2, [0, 0, 4])
+        _, torq = glb.point_matrix_gravity(m0, m1b2)
+        torques_z[k] = torq[2]
+    assert(abs(torques_z-signal) < 10*np.finfo(float).eps).all()
+
+
+def test_torque_c():
+    """
+    Z-torque from rotating outer moments about x-axis and translated from inner
+    moments to outer moments (large translation compared to outer moment radius)
+
+    Tests
+    -----
+    torque
+    """
+    m0 = np.array([[1, 1, .5, 0], [1, -1, -.5, 0]])
+    m1 = np.array([[1, 0, 1, 0], [1, 0, -1, 0]])
+    m1b = glb.rotate_point_array(m1, 0, [0, 1, 0])
+
+    angles = np.arange(0, 360, 10)*np.pi/180
+    torques_z = np.zeros(len(angles))
+
+    # Compute as moments immediately
+    L = 20
+    d0 = pgm.qmoments(L, m0)
+    d1 = pgm.qmoments(L, m1)
+    dz = 5
+    tx, tcx, tsx = mplb.torque(d0, d1, [0, np.pi/2, 0], [0, 0, dz],
+                               'inner-outer')
+    signal = np.real(tcx[0])/2
+    for k in range(1, L+1):
+        signal += np.real(tcx[k])*np.cos(k*angles)
+        signal += np.imag(tsx[k])*np.sin(k*angles)
+
+    for k, angle in enumerate(angles):
+        m1b2 = glb.rotate_point_array(m1b, angle, [1, 0, 0])
+        m1b2 = glb.translate_point_array(m1b2, [0, 0, dz])
+        _, torq = glb.point_matrix_gravity(m0, m1b2)
+        torques_z[k] = torq[2]
+    assert(abs(torques_z-signal) < 10*np.finfo(float).eps).all()
+
+
+def test_torque_d():
+    """
+    Z-torque from rotating outer moments about x-axis and translated from outer
+    moments to outer moments (small translation compared to outer moment radius)
+
+    Tests
+    -----
+    torque
+    """
+    m0 = np.array([[1, 1, .5, 0], [1, -1, -.5, 0]])
+    m1 = np.array([[1, 0, 2, 0], [1, 0, -2, 0]])
+    m1b = glb.rotate_point_array(m1, np.pi/2, [0, 1, 0])
+
+    angles = np.arange(0, 360, 10)*np.pi/180
+    torques_z = np.zeros(len(angles))
+
+    # Compute as moments immediately
+    L = 20
+    d0 = pgm.qmoments(L, m0)
+    d1 = pgm.Qmomentsb(L, m1)
+    dz = .9
+    tx, tcx, tsx = mplb.torque(d0, d1, [0, np.pi/2, 0], [0, 0, dz], 'outer-outer')
+    signal = np.real(tcx[0])/2
+    for k in range(1, L+1):
+        signal += np.real(tcx[k])*np.cos(k*angles)
+        signal += np.imag(tsx[k])*np.sin(k*angles)
+
+    for k, angle in enumerate(angles):
+        m1b2 = glb.rotate_point_array(m1b, angle, [1, 0, 0])
+        m1b2 = glb.translate_point_array(m1b2, [0, 0, dz])
+        _, torq = glb.point_matrix_gravity(m0, m1b2)
+        torques_z[k] = torq[2]
+    assert(abs(torques_z-signal) < 1e3*np.finfo(float).eps).all()
+
+
+def test_torque_e():
+    """
+    Z-torque from rotating inner moments about x-axis and translated from inner
+    moments to inner moments (moments still separated in radius)
+
+    Tests
+    -----
+    torque
+    """
+    m0 = np.array([[1, 1, 0, 0], [1, -1, 0, 0]])
+    m1 = np.array([[1, .5, 2, 0], [1, -.5, -2, 0]])
+    m0b = glb.rotate_point_array(m0, np.pi/2, [0, 1, 0])
+
+    angles = np.arange(0, 360, 10)*np.pi/180
+    torques_z = np.zeros(len(angles))
+
+    # Compute as moments immediately
+    L = 20
+    d0 = pgm.qmoments(L, m0)
+    d1 = pgm.Qmomentsb(L, m1)
+    dz = .5
+    tx, tcx, tsx = mplb.torque(d0, d1, [0, np.pi/2, 0], [0, 0, dz])
+    signal = np.real(tcx[0])/2
+    for k in range(1, L+1):
+        signal += np.real(tcx[k])*np.cos(k*angles)
+
+    for k, angle in enumerate(angles):
+        m0b2 = glb.rotate_point_array(m0b, angle, [1, 0, 0])
+        m0b2 = glb.translate_point_array(m0b2, [0, 0, dz])
+        _, torq = glb.point_matrix_gravity(m0b2, m1)
+        torques_z[k] = torq[2]
+    assert(abs(torques_z-signal) < 1e3*np.finfo(float).eps).all()
