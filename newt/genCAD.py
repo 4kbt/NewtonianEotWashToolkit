@@ -492,8 +492,8 @@ def platehole(pmass, t, r, theta):
     qlm : ndarray
         (LMax+1)x(2LMax+1) complex array of inner moments
     """
-    rect = rect_prism(pmass, t, 2*r, 2*r)
-    cyl = cylinder(0, r, 2*t)
+    rect = rect_prism(pmass, t, 2*r+2*t*np.sin(theta), 2*r + 2*t*np.sin(theta), 0)
+    cyl = cylinder(0, 2*t, r)
     cyl = rotate_mesh(cyl, 0, theta, 0)
     result = rect.intersect(cyl)
     result.pmass = pmass
@@ -521,7 +521,7 @@ def outercone(pmass, H, IR, OR, phih):
     -------
     result : CadQuery object
     """
-    if IR >= 0:
+    if IR <= 0:
         raise ValueError('IR must be greater than 0.')
     else:
         result = (cq.Workplane("XZ")

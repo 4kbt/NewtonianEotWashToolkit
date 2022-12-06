@@ -134,13 +134,13 @@ class Annulus(Shape):
     def __init__(self, lmax, inner, mass, H, Ri, Ro, phic, phih):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.annulus(mass > 0, H, Ri, Ro, phic, phih)
         if self.inner:
             self.qlm = qlm.annulus(lmax, mass, H, Ri, Ro, phic, phih)
         else:
             dens = mass/(2*phih*(Ro**2 - Ri**2)*H)
             self.qlm = bqlm.annulus(lmax, dens, H/2, Ri, Ro, phic, phih)
             self.qlm += bqlm.annulus(lmax, dens, -H/2, Ri, Ro, phic, phih)
-        self.mesh = gcad.annulus(mass > 0, H, Ri, Ro, phic, phih)
 
 
 class RectPrism(Shape):
@@ -150,11 +150,11 @@ class RectPrism(Shape):
     def __init__(self, lmax, inner, mass, H, a, b, phic):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.rect_prism(mass > 0, H, a, b, phic)
         if self.inner:
             self.qlm = qlm.rect_prism(lmax, mass, H, a, b, phic)
         else:
             print('Outer rectangular prism shape not defined')
-        self.mesh = gcad.rect_prism(mass > 0, H, a, b, phic)
 
 
 class TriPrism(Shape):
@@ -164,11 +164,11 @@ class TriPrism(Shape):
     def __init__(self, lmax, inner, mass, H, d, y1, y2):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.tri_prism(mass > 0, H, d, y1, y2)
         if self.inner:
             self.qlm = qlm.tri_prism(lmax, mass, H, d, y1, y2)
         else:
             print('Outer triangular prism shape not defined')
-        self.mesh = gcad.rect_prism(mass > 0, H, d, y1, y2)
 
 
 class Cone(Shape):
@@ -178,11 +178,11 @@ class Cone(Shape):
     def __init__(self, lmax, inner, mass, P, R, phic, phih):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
-        if self.inner:
-            self.qlm = qlm.tri_prism(lmax, mass, P, R, phic, phih)
-        else:
-            print('Outer cone shape not defined')
         self.mesh = gcad.cone(mass > 0, P, 0, R, phic, phih)
+        if self.inner:
+            self.qlm = qlm.cone(lmax, mass, P, R, phic, phih)
+        else:
+            print('Outer cone shape not defined')       
 
 
 class Sphere(Shape):
@@ -192,27 +192,27 @@ class Sphere(Shape):
     def __init__(self, lmax, inner, mass, R, center):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.sphere(mass > 0, R)
         if self.inner:
             self.qlm = qlm.sphere(lmax, mass, R)
             self.translate(center, True)
         else:
             dens = mass/(4*np.pi*R**3/3)
             bqlm.sphere(lmax, dens, R, center[0], center[1], center[2])
-        self.mesh = gcad.sphere(mass > 0, R)
 
 
 class NGon(Shape):
     """
     N-gon with multipoles and cadquery
     """
-    def __init__(self, N, lmax, inner, mass, H, a, phic, Ns):
+    def __init__(self, lmax, inner, mass, H, a, phic, N):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.ngon_prism(mass > 0, H, a, phic, N)
         if self.inner:
-            self.qlm = qlm.ngon_prism(lmax, mass, H, a, phic, Ns)
+            self.qlm = qlm.ngon_prism(lmax, mass, H, a, phic, N)
         else:
             print('Outer N-gon shape not defined.')
-        self.mesh = gcad.ngon_prism(mass > 0, H, a, phic, Ns)
 
 
 class Tetrahedron(Shape):
@@ -222,11 +222,11 @@ class Tetrahedron(Shape):
     def __init__(self, lmax, inner, mass, x, y1, y2, z):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.tetrahedron2(mass > 0, x, y1, y2, z)
         if self.inner:
             self.qlm = qlm.tetrahedron2(lmax, mass, x, y1, y2, z)
         else:
             print('Outer Tetrahedron shape not defined.')
-        self.mesh = gcad.tetrahedron2(mass > 0, x, y1, y2, z)
 
 
 class Pyramid(Shape):
@@ -236,11 +236,11 @@ class Pyramid(Shape):
     def __init__(self, lmax, inner, mass, x, y, z):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.pyramid(mass > 0, x, y, z)
         if self.inner:
             self.qlm = qlm.pyramid(lmax, mass, x, y, z)
         else:
             print('Outer pyramid shape not defined.')
-        self.mesh = gcad.pyramid(mass > 0, x, y, z)
 
 
 class OuterCone(Shape):
@@ -250,12 +250,12 @@ class OuterCone(Shape):
     def __init__(self, lmax, inner, mass, H, IR, OR, phih):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.outercone(mass, H, IR, OR, phih)
         if self.inner:
             print('Inner cone shape should come from Cone.')
         else:
             dens = mass/(2*phih*H*(OR**2-IR**2)/3)
             bqlmn.outer_cone(lmax, dens, H, IR, OR, phih)
-        self.mesh = gcad.outercone(mass, H, IR, OR, phih)
 
 
 class Cylhole(Shape):
@@ -265,13 +265,13 @@ class Cylhole(Shape):
     def __init__(self, lmax, inner, mass, r, R):
         Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.cylhole(mass > 0, r, R)
         if self.inner:
             dens = 1
             self.qlm = qlmn.steinmetz(lmax, dens, r, R)
-            self.qlm *= mass/np.real(qlmn[0, lmax])*np.sqrt(4*np.pi)
+            self.qlm *= mass/np.real(self.qlm[0, lmax])*np.sqrt(4*np.pi)
         else:
             print('Outer cylindrical hole shape not defined.')
-        self.mesh = gcad.cylhole(mass > 0, r, R)
 
 
 class Platehole(Shape):
@@ -279,12 +279,12 @@ class Platehole(Shape):
     Platehole with multipoles and pointgravity
     """
     def __init__(self, N, lmax, inner, mass, t, r, theta):
-        Shape.__init__(self, N, lmax, inner)
+        Shape.__init__(self, lmax, inner)
         self.mass = mass
+        self.mesh = gcad.platehole(mass > 0, t, r, theta)
         if self.inner:
             dens = 1
             self.qlm = qlmn.platehole(lmax, dens, t, r, theta)
-            self.qlm *= mass/np.real(qlmn[0, lmax])*np.sqrt(4*np.pi)
+            self.qlm *= mass/np.real(self.qlm[0, lmax])*np.sqrt(4*np.pi)
         else:
             print('Outer plate hole shape not defined.')
-        self.mesh = gcad.platehole(mass > 0, t, r, theta)
