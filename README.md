@@ -103,7 +103,7 @@ pip install .
 ```
 
 ## Citing
-We ask that anyone using this package cite this [reference][2]
+We ask that anyone using this package cite this [reference][2] for the multipole methods and this repository itself for the implementation.  Thank you!
 
 ### To Do
 - [X] Multipole rotations
