@@ -162,17 +162,17 @@ def translate_q2Q(qlm, rPrime):
     LMax = Lqlm
 
     # Conjugate spherical harmonics
-    ylmS = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
+    ylmS = np.zeros([2*LMax+1, 4*LMax+1], dtype='complex')
     QLM = np.zeros([LMax+1, 2*LMax+1], dtype='complex')
 
-    for l in range(LMax+1):
+    for l in range(2*LMax+1):
         ms = np.arange(-l, l+1)
         sphHarmL = sp.sph_harm(ms, l, phiP, thetaP)
-        ylmS[l, LMax-l:LMax+l+1] = sphHarmL
+        ylmS[l, 2*LMax-l:2*LMax+l+1] = sphHarmL
 
     for L in range(LMax+1):
-        for M in range(L+1):
-            for lP in range(LMax-L+1):
+        for M in range(-L, L+1):
+            for lP in range(LMax+1):
                 l = L+lP
                 rPl1 = rP**(l+1)
                 gamsum = sp.gammaln(2*l+1)-sp.gammaln(2*lP+2)-sp.gammaln(2*L+1)
@@ -180,13 +180,8 @@ def translate_q2Q(qlm, rPrime):
                 fac /= rPl1
                 for mP in range(-lP, lP+1):
                     m = M + mP
-                    if (abs(m) <= l) and (l <= LMax):
+                    if (abs(m) <= l):
                         cFac = fac*cg.cgCoeff(lP, l, -mP, m, L, M)*(-1)**mP
-                        QLM[L, LMax+M] += cFac*ylmS[l, LMax+m]*qlm[lP, LMax+mP]
+                        QLM[L, LMax+M] += cFac*ylmS[l, 2*LMax+m]*qlm[lP, LMax+mP]
 
-    # Moments always satisfy q(l, -m) = (-1)^m q(l, m)*
-    ms = np.arange(-LMax, LMax+1)
-    fac = (-1)**(np.abs(ms))
-    QLM += np.conj(np.fliplr(QLM))*fac
-    QLM[:, LMax] /= 2
     return QLM
