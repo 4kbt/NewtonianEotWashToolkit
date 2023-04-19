@@ -219,7 +219,7 @@ def transl_newt_z_SR(LMax, dr):
     http://legacydirs.umiacs.umd.edu/~gumerov/PDFs/cs-tr-4701.pdf
     """
     lp = np.arange(2*LMax+1)
-    svals = np.exp(sp.gammaln(lp+1) - (lp+1)*np.log(dr))
+    svals = np.sign(dr)**(lp+1)*np.exp(sp.gammaln(lp+1) - (lp+1)*np.log(np.abs(dr)))
     srms = []
     for m in range(LMax+1):
         faca = alphanm(lp[m:LMax+1], m)
@@ -234,8 +234,7 @@ def alphanm(n, m):
     """
     Normalization function for inner moments in Gumerov & Duraiswami formalism.
     """
-    anm = (-1)**n*1j**(-np.abs(m))
-    anm *= np.sqrt(4*np.pi/((2*n+1)*sp.factorial(n-m)*sp.factorial(n+m)))
+    anm = (-1)**n*np.sqrt(1/((2*n+1)*sp.factorial(n-m)*sp.factorial(n+m)))
     return anm
 
 
@@ -243,12 +242,11 @@ def betanm(n, m):
     """
     Normalization function for outer moments in Gumerov & Duraiswami formalism.
     """
-    bnm = 1j**(np.abs(m))
-    bnm *= np.sqrt(4*np.pi*sp.factorial(n-m)*sp.factorial(n+m)/(2*n+1))
+    bnm = np.sqrt(sp.factorial(n-m)*sp.factorial(n+m)/(2*n+1))
     return bnm
 
 
-def apply_trans_mat(qlm, efms):
+def apply_trans_mat(qlm, efms, q2Q=False):
     """
     Applies each set of the coaxial translation matrices which mix degree (l)
     for fixed order (m).
@@ -274,11 +272,13 @@ def apply_trans_mat(qlm, efms):
     qNew[:, L] = np.dot(efms[0], qlm[:, L])
     for m in range(1, L+1):
         qNew[m:, L+m] = np.dot(efms[m], qlm[m:, L+m])
-        qNew[m:, L-m] = np.dot(efms[m], qlm[m:, L-m])
+        qNew[m:, L-m] = np.dot(np.conj(efms[m]), qlm[m:, L-m])
+    if q2Q:
+        qNew = np.fliplr(qNew)
     return qNew
 
 
-def apply_trans_mat_right(qlm, efms):
+def apply_trans_mat_right(qlm, efms, q2Q=False):
     """
     Apply coaxial translation matrices by right multiplication.
 
@@ -306,7 +306,9 @@ def apply_trans_mat_right(qlm, efms):
     for m in range(1, L+1):
         efmsmT = efms[m].T
         qNew[m:, L+m] = np.dot(efmsmT, qlm[m:, L+m])
-        qNew[m:, L-m] = np.dot(efmsmT, qlm[m:, L-m])
+        qNew[m:, L-m] = np.dot(np.conj(efmsmT), qlm[m:, L-m])
+    if q2Q:
+        qNew = np.fliplr(qNew)
     return qNew
 
 
@@ -336,15 +338,17 @@ def get_anm(n, m):
 def translate_qlm(qlm, rvec):
     lmax = len(qlm) - 1
     r = np.sqrt(rvec[0]**2 + rvec[1]**2 + rvec[2]**2)
-    rrms = transl_newt_z_RR(lmax, r)
     if r == 0:
         qlmp = np.copy(qlm)
-    elif r == rvec[2]:
+        return qlmp
+    rrms = transl_newt_z_RR(lmax, r)
+    if r == rvec[2]:
         phi, theta = 0, 0
         qlmp = apply_trans_mat(qlm, rrms)
     else:
         phi = np.arctan2(rvec[1], rvec[0])
         theta = np.arccos(rvec[2]/r)
+        # Ds = rot.wignerDl(lmax, phi, -theta, -phi)  # also works
         Ds = rot.wignerDl(lmax, -phi, -theta, -phi)
         qm1r = rot.rotate_qlm_Ds(qlm, Ds)
         qlmp = apply_trans_mat(qm1r, rrms)
@@ -355,16 +359,18 @@ def translate_qlm(qlm, rvec):
 def translate_Qlmb(Qlm, rvec):
     lmax = len(Qlm) - 1
     r = np.sqrt(rvec[0]**2 + rvec[1]**2 + rvec[2]**2)
-    ssms = transl_newt_z_SS(lmax, r)
     if r == 0:
         Qlmp = np.copy(Qlm)
-    elif r == rvec[2]:
+        return Qlmp
+    ssms = transl_newt_z_SS(lmax, r)
+    if r == rvec[2]:
         phi, theta = 0, 0
         Qlmp = apply_trans_mat(Qlm, ssms)
     else:
         phi = np.arctan2(rvec[1], rvec[0])
         theta = np.arccos(rvec[2]/r)
-        Ds = rot.wignerDl(lmax, -phi, -theta, -phi)
+        # Ds = rot.wignerDl(lmax, p-hi, -theta, phi)  # also works?
+        Ds = rot.wignerDl(lmax, phi, -theta, phi)
         qm1r = rot.rotate_qlm_Ds(Qlm, Ds)
         Qlmp = apply_trans_mat(qm1r, ssms)
         Qlmp = rot.rotate_qlm_Ds(Qlmp, Ds, True)
@@ -374,17 +380,23 @@ def translate_Qlmb(Qlm, rvec):
 def translate_q2Q(qlm, rvec):
     lmax = len(qlm) - 1
     r = np.sqrt(rvec[0]**2 + rvec[1]**2 + rvec[2]**2)
-    srms = transl_newt_z_SR(lmax, r)
     if r == 0:
         Qlmp = np.copy(qlm)
-    elif r == rvec[2]:
+        return Qlmp
+    srms = transl_newt_z_SR(lmax, r)
+    if r == rvec[2]:
         phi, theta = 0, 0
-        Qlmp = apply_trans_mat(qlm, srms)
+        Qlmp = apply_trans_mat(qlm, srms, q2Q=True)
     else:
         phi = np.arctan2(rvec[1], rvec[0])
         theta = np.arccos(rvec[2]/r)
         Ds = rot.wignerDl(lmax, -phi, -theta, -phi)
         qm1r = rot.rotate_qlm_Ds(qlm, Ds)
-        Qlmp = apply_trans_mat(qm1r, srms)
-        Qlmp = rot.rotate_qlm_Ds(Qlmp, Ds, True)
+        Qlmp = apply_trans_mat(qm1r, srms, q2Q=True)
+        Ds2 = rot.wignerDl(lmax, phi, -theta, phi)
+        Qlmp = rot.rotate_qlm_Ds(Qlmp, Ds2, True)
+        """
+        Ds2 = rot.wignerDl(lmax, -phi, theta, phi)
+        Qlmp = rot.rotate_qlm_Ds(Qlmp, Ds2)
+        """
     return Qlmp

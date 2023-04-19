@@ -241,7 +241,10 @@ def torque(qlm, Qlm, euler, rvec, trans_type='inner-inner', cnst=BIG_G):
     ms = np.arange(-minL, minL+1)
 
     alpha, beta, gamma = euler
-    DsR = rot.wignerDl(minL, alpha, beta, gamma)
+    if trans_type == 'inner-inner' or trans_type == 'inner-outer':
+        DsR = rot.wignerDl(minL, alpha, beta, gamma)
+    else:
+        DsR = rot.wignerDl(minL, -alpha, beta, -gamma)
     qnew = np.copy(qlm)
     Qnew = np.copy(Qlm)
     r = np.sqrt(rvec[0]**2 + rvec[1]**2 + rvec[2]**2)
@@ -266,12 +269,14 @@ def torque(qlm, Qlm, euler, rvec, trans_type='inner-inner', cnst=BIG_G):
             Qnew = rot.rotate_qlm_Ds_right(Qnew, DsR)
     elif trans_type == 'inner-outer' or trans_type == 'outer-outer':
         qnew *= np.outer(lfac, ms)
+        q2Q = False
         if r == 0:
             qnew = rot.rotate_qlm_Ds_right(qnew, DsR)
         elif r == rvec[2]:
             phi, theta = 0, 0
             if trans_type == 'inner-outer':
                 sms = trr.transl_newt_z_SR(minL, r)
+                q2Q = True
             else:
                 sms = trr.transl_newt_z_SS(minL, r)
             qnew = trr.apply_trans_mat_right(qnew, sms)
@@ -281,12 +286,15 @@ def torque(qlm, Qlm, euler, rvec, trans_type='inner-inner', cnst=BIG_G):
             theta = np.arccos(rvec[2]/r)
             Ds = rot.wignerDl(minL, -phi, -theta, -phi)
             if trans_type == 'inner-outer':
+                q2Q = True
                 sms = trr.transl_newt_z_SR(minL, r)
+                Ds2 = rot.wignerDl(minL, phi, -theta, phi)
             else:
                 sms = trr.transl_newt_z_SS(minL, r)
+                Ds2 = Ds
             # Translate and rotate in opposite order than applied to q
-            qnew = rot.rotate_qlm_Ds_right(qnew, Ds, True)
-            qnew = trr.apply_trans_mat_right(qnew, sms)
+            qnew = rot.rotate_qlm_Ds_right(qnew, Ds2, True)
+            qnew = trr.apply_trans_mat_right(qnew, sms, q2Q)
             qnew = rot.rotate_qlm_Ds_right(qnew, Ds)
             qnew = rot.rotate_qlm_Ds_right(qnew, DsR)
     else:
@@ -319,3 +327,19 @@ def embed_qlm(qlm, LNew):
         qNew = np.zeros([LNew+1, 2*LNew+1], dtype='complex')
         qNew[:LOld+1, LNew-LOld:LNew+LOld+1] = qlm
     return qNew
+
+
+def torques_at_angle(tc, ts, angles, outer=False):
+    L = len(tc)-1
+    signal_c = np.real(tc[0])/2
+    signal_s = np.imag(ts[0])/2
+    if outer:
+        sign = -1
+    else:
+        sign = 1
+    for k in range(1, L+1):
+        signal_c += np.real(tc[k])*np.cos(sign*k*angles)
+        signal_c += np.imag(tc[k])*np.sin(sign*k*angles)
+        signal_s += np.imag(ts[k])*np.sin(sign*k*angles)
+        signal_s += np.real(ts[k])*np.cos(sign*k*angles)
+    return signal_c + signal_s
